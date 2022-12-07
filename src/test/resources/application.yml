@@ -1,0 +1,15 @@
+auth:
+  user:
+    login: user
+    password: password
+  admin:
+    login: admin
+    password: password
+
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:13://hostname/main?TC_REUSABLE=true
+    driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+mybatis:
+  type-handlers-package: org.example.coursework.handler
