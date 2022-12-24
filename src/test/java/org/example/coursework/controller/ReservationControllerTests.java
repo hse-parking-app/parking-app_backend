@@ -1,8 +1,5 @@
 package org.example.coursework.controller;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.coursework.AbstractTest;
 import org.example.coursework.model.Reservation;
@@ -11,11 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -82,11 +79,13 @@ public class ReservationControllerTests extends AbstractTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(reservation2String)));
     }
+
     @Test
     public void positive_deleteReservationTest() throws Exception {
         this.mockMvc.perform(delete("/reservations/" + reservation.getId().toString()))
                 .andExpect(status().isOk());
     }
+
     @Test
     public void negative_notValidBodyTest() throws Exception {
         this.mockMvc.perform(post("/reservations")

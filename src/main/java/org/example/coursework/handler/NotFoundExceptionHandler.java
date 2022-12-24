@@ -1,11 +1,4 @@
-/*
- * Copyright (c) 2021-2021.
- * Written by Maksim Stepanenko <stepanenko-qa@yandex.ru>
- */
-
 package org.example.coursework.handler;
-
-import java.util.Date;
 
 import org.example.coursework.error.ErrorMessage;
 import org.example.coursework.error.NotFoundException;
@@ -14,6 +7,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+
+import java.util.Date;
 
 @RestControllerAdvice
 public class NotFoundExceptionHandler {

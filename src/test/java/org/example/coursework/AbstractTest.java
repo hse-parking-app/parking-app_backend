@@ -1,11 +1,4 @@
-/*
- * Copyright (c) 2021-2021.
- * Written by Maksim Stepanenko <stepanenko-qa@yandex.ru>
- */
-
 package org.example.coursework;
-
-import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -23,24 +16,32 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.example.coursework.utils.Cache.carCache;
-import static org.example.coursework.utils.Cache.employeeCache;
-import static org.example.coursework.utils.Cache.parkingSpotCache;
-import static org.example.coursework.utils.Cache.reservationCache;
+import java.time.LocalDateTime;
+
+import static org.example.coursework.utils.Cache.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class AbstractTest {
 
+    protected final Car car = new Car("Supra", 5, 2, "5adm799");
+    protected final Employee employee = new Employee("Pupa");
+    protected final ParkingSpot parkingSpot = new ParkingSpot(1, true);
+    protected final Reservation reservation = new Reservation(
+            car.getId(),
+            employee.getId(),
+            parkingSpot.getId(),
+            LocalDateTime.of(2031, 1, 1, 0, 0, 0),
+            LocalDateTime.of(2031, 1, 1, 1, 0, 0)
+    );
     @Autowired
     protected MockMvc mockMvc;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
     protected ObjectMapper jackson = new ObjectMapper()
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     void insert(Car car) {
         jdbcTemplate.update("""
@@ -105,17 +106,6 @@ public class AbstractTest {
     void deleteReservations() {
         jdbcTemplate.update("DELETE FROM reservations");
     }
-
-    protected final Car car = new Car("Supra", 5, 2, "5adm799");
-    protected final Employee employee = new Employee("Pupa");
-    protected final ParkingSpot parkingSpot = new ParkingSpot(1, true);
-    protected final Reservation reservation = new Reservation(
-            car.getId(),
-            employee.getId(),
-            parkingSpot.getId(),
-            LocalDateTime.of(2031, 1, 1, 0, 0, 0),
-            LocalDateTime.of(2031, 1, 1, 1, 0, 0)
-    );
 
     @BeforeEach
     void setUpEach() {

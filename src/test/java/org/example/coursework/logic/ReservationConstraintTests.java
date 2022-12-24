@@ -1,7 +1,5 @@
 package org.example.coursework.logic;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.coursework.AbstractTest;
 import org.example.coursework.dao.CarRepository;
@@ -15,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import java.time.LocalDateTime;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,9 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @WithMockUser(username = "admin", roles = {"ADMIN"})
 public class ReservationConstraintTests extends AbstractTest {
-    @Autowired
-    CarRepository repository;
-
     final Reservation reservation2 = new Reservation(
             car.getId(),
             employee.getId(),
@@ -33,6 +30,8 @@ public class ReservationConstraintTests extends AbstractTest {
             LocalDateTime.of(2031, 1, 1, 12, 0, 0),
             LocalDateTime.of(2031, 1, 1, 13, 0, 0)
     );
+    @Autowired
+    CarRepository repository;
     String reservationString;
     String reservation2String;
 

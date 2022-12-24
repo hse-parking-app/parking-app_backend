@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2021-2021.
- * Written by Maksim Stepanenko <stepanenko-qa@yandex.ru>
- */
-
 package org.example.coursework.smoke;
 
 import org.example.coursework.controller.CarController;
@@ -18,10 +13,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 class FintechApplicationTests {
 
-    @Autowired private CarController carController;
-    @Autowired private EmployeeController employeeController;
-    @Autowired private ParkingSpotController parkingSpotController;
-    @Autowired private ReservationController reservationController;
+    @Autowired
+    private CarController carController;
+    @Autowired
+    private EmployeeController employeeController;
+    @Autowired
+    private ParkingSpotController parkingSpotController;
+    @Autowired
+    private ReservationController reservationController;
 
     @Test
     void contextLoads() {

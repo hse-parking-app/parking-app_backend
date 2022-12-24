@@ -1,14 +1,9 @@
-/*
- * Copyright (c) 2021-2021.
- * Written by Maksim Stepanenko <stepanenko-qa@yandex.ru>
- */
-
 package org.example.coursework.error;
-
-import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 @AllArgsConstructor

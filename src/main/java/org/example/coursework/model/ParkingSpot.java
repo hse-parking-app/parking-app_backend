@@ -1,10 +1,10 @@
 package org.example.coursework.model;
 
-import java.util.UUID;
-import javax.validation.constraints.PositiveOrZero;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import javax.validation.constraints.PositiveOrZero;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor

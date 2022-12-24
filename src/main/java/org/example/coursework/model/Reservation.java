@@ -1,13 +1,13 @@
 package org.example.coursework.model;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-import javax.validation.constraints.FutureOrPresent;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.example.coursework.validate.DurationIsLess24Hours;
 import org.example.coursework.validate.NotWeekends;
+
+import javax.validation.constraints.FutureOrPresent;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NotWeekends

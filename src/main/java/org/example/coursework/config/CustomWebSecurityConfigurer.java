@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2021-2021.
- * Written by Maksim Stepanenko <stepanenko-qa@yandex.ru>
- */
-
 package org.example.coursework.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +25,10 @@ public class CustomWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic().and()
-            .authorizeRequests()
-            .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger/**", "/swagger*").permitAll()
-            .and().authorizeRequests().anyRequest().authenticated()
-            .and().csrf().disable();
+                .authorizeRequests()
+                .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger/**", "/swagger*").permitAll()
+                .and().authorizeRequests().anyRequest().authenticated()
+                .and().csrf().disable();
     }
 
     @Autowired

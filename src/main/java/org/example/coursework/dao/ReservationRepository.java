@@ -1,18 +1,11 @@
 package org.example.coursework.dao;
 
+import org.apache.ibatis.annotations.*;
+import org.example.coursework.model.Reservation;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
-import org.example.coursework.model.Reservation;
 
 @Mapper
 public interface ReservationRepository {
@@ -49,7 +42,7 @@ public interface ReservationRepository {
     void deleteAll();
 
     @Select("""
-            SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations 
+            SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations
             WHERE parking_spot_id = #{parkingSpotId}::uuid AND 
                 ((#{startTime} < start_time AND #{endTime} > start_time) OR (#{startTime} > start_time AND #{startTime} < end_time))
                 AND id <> #{id}::uuid 
@@ -59,7 +52,7 @@ public interface ReservationRepository {
     Set<Reservation> getParkingSpotTimeCollisions(Reservation reservation);
 
     @Select("""
-            SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations 
+            SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations
             WHERE car_id = #{carId}::uuid AND 
                 ((#{startTime} < start_time AND #{endTime} > start_time) OR (#{startTime} > start_time AND #{startTime} < end_time))
                 AND id <> #{id}::uuid 
