@@ -15,6 +15,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping("/reservations")
 public class ReservationController {
+
     private final ReservationService service;
 
     public ReservationController(ReservationService service) {

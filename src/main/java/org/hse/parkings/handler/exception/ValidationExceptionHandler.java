@@ -1,10 +1,11 @@
-package org.hse.parkings.handler;
+package org.hse.parkings.handler.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.hse.parkings.exception.EngagedException;
 import org.hse.parkings.exception.ErrorMessage;
 import org.hse.parkings.exception.ParamMessage;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -20,9 +21,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ValidationExceptionHandler {
 
-    @ExceptionHandler({
-            EngagedException.class
-    })
+    @ExceptionHandler(EngagedException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     protected ErrorMessage handleRuntime(RuntimeException ex, WebRequest request) {
         return new ErrorMessage(
@@ -34,9 +33,7 @@ public class ValidationExceptionHandler {
         );
     }
 
-    @ExceptionHandler({
-            ConstraintViolationException.class
-    })
+    @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     protected ErrorMessage handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
         return new ErrorMessage(
@@ -54,9 +51,7 @@ public class ValidationExceptionHandler {
         );
     }
 
-    @ExceptionHandler({
-            MethodArgumentNotValidException.class
-    })
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     protected ErrorMessage handleMethodArgumentNotValid(MethodArgumentNotValidException ex, WebRequest request) {
         return new ErrorMessage(
@@ -72,9 +67,7 @@ public class ValidationExceptionHandler {
         );
     }
 
-    @ExceptionHandler({
-            InvalidFormatException.class
-    })
+    @ExceptionHandler(InvalidFormatException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     protected ErrorMessage handleIllegalState(InvalidFormatException ex, WebRequest request) {
         if (ex.getTargetType().equals(UUID.class)) {
@@ -91,6 +84,18 @@ public class ValidationExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 new Date(),
                 Collections.singletonList(new ParamMessage("error", ex.getOriginalMessage())),
+                request.getDescription(false)
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    protected ErrorMessage handleHttpMessageNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
+        return new ErrorMessage(
+                HttpStatus.BAD_REQUEST,
+                HttpStatus.BAD_REQUEST.value(),
+                new Date(),
+                Collections.singletonList(new ParamMessage("error", "JSON parse error")),
                 request.getDescription(false)
         );
     }

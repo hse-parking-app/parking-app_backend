@@ -1,8 +1,8 @@
-package org.hse.parkings.controller;
+package org.hse.parkings.controller.building;
 
 import org.hse.parkings.exception.NotFoundException;
-import org.hse.parkings.model.ParkingSpot;
-import org.hse.parkings.service.ParkingSpotService;
+import org.hse.parkings.model.building.ParkingSpot;
+import org.hse.parkings.service.building.ParkingSpotService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +15,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping("/parkingSpots")
 public class ParkingSpotController {
+
     private final ParkingSpotService service;
 
     public ParkingSpotController(ParkingSpotService service) {
@@ -42,7 +43,7 @@ public class ParkingSpotController {
     @GetMapping("/{id}")
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
     ParkingSpot get(@PathVariable UUID id) {
-        return service.find(id);
+        return service.findParkingSpot(id);
     }
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)

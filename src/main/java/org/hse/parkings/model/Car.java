@@ -11,7 +11,9 @@ import java.util.UUID;
 @Data
 @Builder(toBuilder = true)
 public class Car {
-    UUID id;
+
+    @Builder.Default
+    UUID id = UUID.randomUUID();
 
     @NotNull(message = "Car model is required parameter")
     @NotBlank(message = "Model cannot be blank")

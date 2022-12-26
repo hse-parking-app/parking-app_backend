@@ -5,8 +5,8 @@ import org.hse.parkings.AbstractTest;
 import org.hse.parkings.dao.CarRepository;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Employee;
-import org.hse.parkings.model.ParkingSpot;
 import org.hse.parkings.model.Reservation;
+import org.hse.parkings.model.building.ParkingSpot;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @WithMockUser(username = "admin", roles = {"ADMIN"})
 public class ReservationConstraintTests extends AbstractTest {
+
     //    final Reservation reservation2 = new Reservation(
 //            car.getId(),
 //            employee.getId(),
@@ -31,7 +32,7 @@ public class ReservationConstraintTests extends AbstractTest {
 //            LocalDateTime.of(2031, 1, 1, 13, 0, 0)
 //    );
     final Reservation reservation2 = Reservation.builder()
-            .carId(car.getId())
+            .carId(carSupra.getId())
             .employeeId(employee.getId())
             .parkingSpotId(parkingSpot.getId())
             .startTime(LocalDateTime.of(2031, 1, 1, 12, 0, 0))

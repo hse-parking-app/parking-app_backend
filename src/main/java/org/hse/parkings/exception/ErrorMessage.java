@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class ErrorMessage {
+
     private HttpStatus error;
     private int code;
     private Date timestamp;

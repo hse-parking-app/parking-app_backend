@@ -24,13 +24,20 @@ public interface CarRepository {
     @ResultMap("carResultMap")
     Set<Car> findAll();
 
-    @Insert("INSERT INTO cars (id, model, length_meters, weight_tons, registry_number) " +
-            "VALUES (#{id}::uuid, #{model}, #{lengthMeters}, #{weightTons}, #{registryNumber})")
+    @Insert("""
+            INSERT INTO cars (id, model, length_meters, weight_tons, registry_number)
+            VALUES (#{id}::uuid, #{model}, #{lengthMeters}, #{weightTons}, #{registryNumber})
+            """
+    )
     void save(Car car);
 
-    @Update("UPDATE cars SET model = #{model}, length_meters = #{lengthMeters}, " +
-            "weight_tons = #{weightTons}, registry_number = #{registryNumber} " +
-            "WHERE id = #{id}::uuid")
+    @Update("""
+            UPDATE cars
+            SET model = #{model}, length_meters = #{lengthMeters},
+            weight_tons = #{weightTons}, registry_number = #{registryNumber}
+            WHERE id = #{id}::uuid
+            """
+    )
     void update(Car car);
 
     @Delete("DELETE FROM cars WHERE id = #{id}::uuid")

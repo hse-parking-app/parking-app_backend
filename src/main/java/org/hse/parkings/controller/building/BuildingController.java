@@ -1,7 +1,7 @@
-package org.hse.parkings.controller;
+package org.hse.parkings.controller.building;
 
-import org.hse.parkings.model.Car;
-import org.hse.parkings.service.CarService;
+import org.hse.parkings.model.building.Building;
+import org.hse.parkings.service.building.BuildingService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,25 +12,25 @@ import java.util.UUID;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("/cars")
-public class CarController {
+@RequestMapping("/building")
+public class BuildingController {
 
-    private final CarService service;
+    private final BuildingService service;
 
-    public CarController(CarService service) {
+    public BuildingController(BuildingService service) {
         this.service = service;
     }
 
     @GetMapping
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    Set<Car> getAll() {
+    Set<Building> getAll() {
         return service.findAll();
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
     @Secured("ROLE_ADMIN")
-    Car create(@Valid @RequestBody Car car) {
-        return service.save(car);
+    Building create(@Valid @RequestBody Building building) {
+        return service.save(building);
     }
 
     @DeleteMapping
@@ -41,8 +41,8 @@ public class CarController {
 
     @GetMapping("/{id}")
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    Car get(@PathVariable UUID id) {
-        return service.findCar(id);
+    Building get(@PathVariable UUID id) {
+        return service.findBuilding(id);
     }
 
     @DeleteMapping("/{id}")
@@ -53,8 +53,8 @@ public class CarController {
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @Secured("ROLE_ADMIN")
-    Car edit(@PathVariable UUID id, @Valid @RequestBody Car car) {
-        car.setId(id);
-        return service.update(car);
+    Building edit(@PathVariable UUID id, @Valid @RequestBody Building building) {
+        building.setId(id);
+        return service.update(building);
     }
 }

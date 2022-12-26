@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = DurationValidator.class)
 public @interface DurationIsLess24Hours {
+
     String message() default "Duration between start time and end time must be more than 0 and less than 24 hours";
 
     Class<?>[] groups() default {};

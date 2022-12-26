@@ -37,6 +37,7 @@ mybatis:
 springdoc:
   swagger-ui:
     path: /swagger.html
+    disable-swagger-default-url: true
   api-docs:
     path: /swagger
 

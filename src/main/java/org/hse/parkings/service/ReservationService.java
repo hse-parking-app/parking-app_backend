@@ -13,15 +13,16 @@ import static org.hse.parkings.utils.Cache.reservationCache;
 
 @Service
 public class ReservationService {
-    private final ReservationRepository reservationRepository;
 
-    public ReservationService(ReservationRepository reservationRepository) {
-        this.reservationRepository = reservationRepository;
+    private final ReservationRepository repository;
+
+    public ReservationService(ReservationRepository repository) {
+        this.repository = repository;
     }
 
     public Reservation save(Reservation reservation) throws EngagedException {
-        boolean parkingSpotEngaged = !reservationRepository.getParkingSpotTimeCollisions(reservation).isEmpty();
-        boolean carAlreadyHasParkingSpaceAtThisTime = !reservationRepository.getCarTimeCollisions(reservation).isEmpty();
+        boolean parkingSpotEngaged = !repository.getParkingSpotTimeCollisions(reservation).isEmpty();
+        boolean carAlreadyHasParkingSpaceAtThisTime = !repository.getCarTimeCollisions(reservation).isEmpty();
         if (parkingSpotEngaged) {
             throw new EngagedException("The parking space is occupied. Try another parking spot or reservation time");
         }
@@ -35,48 +36,47 @@ public class ReservationService {
                 .parkingSpotId(reservation.getParkingSpotId())
                 .startTime(reservation.getStartTime())
                 .endTime(reservation.getEndTime()).build();
-        reservationRepository.save(toSave);
+        repository.save(toSave);
         reservationCache.remove(toSave.getId());
         return find(toSave.getId());
     }
 
     public Reservation update(Reservation reservation) throws EngagedException {
-        boolean parkingSpotEngaged = !reservationRepository.getParkingSpotTimeCollisions(reservation).isEmpty();
-        boolean carAlreadyHasParkingSpaceAtThisTime = !reservationRepository.getCarTimeCollisions(reservation).isEmpty();
+        boolean parkingSpotEngaged = !repository.getParkingSpotTimeCollisions(reservation).isEmpty();
+        boolean carAlreadyHasParkingSpaceAtThisTime = !repository.getCarTimeCollisions(reservation).isEmpty();
         if (parkingSpotEngaged) {
             throw new EngagedException("The parking space is occupied. Try another parking spot or reservation time");
         }
         if (carAlreadyHasParkingSpaceAtThisTime) {
             throw new EngagedException("The parking space is occupied. Try another parking spot or reservation time");
         }
-        reservationRepository.update(reservation);
+        repository.update(reservation);
         reservationCache.remove(reservation.getId());
         return find(reservation.getId());
     }
 
     public void delete(UUID id) {
-        reservationRepository.delete(id);
+        repository.delete(id);
         reservationCache.remove(id);
     }
 
     public void deleteAll() {
-        reservationRepository.deleteAll();
+        repository.deleteAll();
         reservationCache.clear();
     }
 
     public Reservation find(UUID id) throws NotFoundException {
         if (reservationCache.containsKey(id)) {
             return reservationCache.get(id);
-        } else {
-            Reservation reservation = reservationRepository
-                    .find(id)
-                    .orElseThrow(() -> new NotFoundException("Reservation with id = " + id + " not found"));
-            reservationCache.put(id, reservation);
-            return reservation;
         }
+        Reservation reservation = repository
+                .find(id)
+                .orElseThrow(() -> new NotFoundException("Reservation with id = " + id + " not found"));
+        reservationCache.put(id, reservation);
+        return reservation;
     }
 
     public Set<Reservation> findAll() {
-        return reservationRepository.findAll();
+        return repository.findAll();
     }
 }

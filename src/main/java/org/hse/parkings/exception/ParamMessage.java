@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ParamMessage {
+
     private String param;
     private String message;
 }

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 @Mapper
 public interface ReservationRepository {
+
     @Select("SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations " +
             "WHERE id = #{id}::uuid")
     @Results(id = "reservationResultMap", value = {
@@ -21,7 +22,7 @@ public interface ReservationRepository {
     })
     Optional<Reservation> find(UUID id);
 
-    @Select("SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations")
+    @Select("SELECT * FROM reservations")
     @ResultMap("reservationResultMap")
     Set<Reservation> findAll();
 

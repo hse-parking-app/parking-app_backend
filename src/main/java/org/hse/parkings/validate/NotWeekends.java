@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = WeekendValidator.class)
 public @interface NotWeekends {
+
     String message() default "Cannot book a parking spot on Saturday and Sunday";
 
     Class<?>[] groups() default {};

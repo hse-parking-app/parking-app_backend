@@ -2,8 +2,8 @@ package org.hse.parkings.smoke;
 
 import org.hse.parkings.controller.CarController;
 import org.hse.parkings.controller.EmployeeController;
-import org.hse.parkings.controller.ParkingSpotController;
 import org.hse.parkings.controller.ReservationController;
+import org.hse.parkings.controller.building.ParkingSpotController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

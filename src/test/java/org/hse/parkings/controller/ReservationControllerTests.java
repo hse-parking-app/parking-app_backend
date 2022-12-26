@@ -28,7 +28,7 @@ public class ReservationControllerTests extends AbstractTest {
 //            LocalDateTime.of(2031, 1, 1, 13, 0, 0)
 //    );
     final Reservation reservation2 = Reservation.builder()
-            .carId(car.getId())
+            .carId(carSupra.getId())
             .employeeId(employee.getId())
             .parkingSpotId(parkingSpot.getId())
             .startTime(LocalDateTime.of(2031, 1, 1, 12, 0, 0))
@@ -78,7 +78,7 @@ public class ReservationControllerTests extends AbstractTest {
 //                LocalDateTime.of(2031, 1, 1, 13, 0, 0)
 //        );
         Reservation reservation2 = Reservation.builder()
-                .carId(car.getId())
+                .carId(carSupra.getId())
                 .employeeId(employee.getId())
                 .parkingSpotId(parkingSpot.getId())
                 .startTime(LocalDateTime.of(2031, 1, 1, 12, 0, 0))

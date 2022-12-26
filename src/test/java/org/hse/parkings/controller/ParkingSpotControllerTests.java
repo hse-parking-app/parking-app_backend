@@ -2,7 +2,7 @@ package org.hse.parkings.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hse.parkings.AbstractTest;
-import org.hse.parkings.model.ParkingSpot;
+import org.hse.parkings.model.building.ParkingSpot;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

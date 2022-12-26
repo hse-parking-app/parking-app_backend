@@ -1,7 +1,7 @@
 package org.hse.parkings.logic;
 
 import org.hse.parkings.AbstractTest;
-import org.hse.parkings.model.ParkingSpot;
+import org.hse.parkings.model.building.ParkingSpot;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @WithMockUser(username = "admin", roles = {"ADMIN"})
 public class ParkingSpotConstraintTests extends AbstractTest {
+
     //    final ParkingSpot parkingSpot2 = new ParkingSpot(-2, true);
     final ParkingSpot parkingSpot2 = ParkingSpot.builder()
             .parkingNumber("")
