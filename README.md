@@ -1,4 +1,4 @@
-# fintech-parking
+# fintech-parking *\*README expired. waiting for rework\**
 
 ## Cервис для бронирования парковочных мест
 
