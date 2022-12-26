@@ -1,10 +1,10 @@
 CREATE TABLE cars
 (
-    id               UUID PRIMARY KEY,
-    model            VARCHAR NOT NULL,
-    dimension_length INTEGER NOT NULL,
-    dimension_wight  INTEGER NOT NULL,
-    registry_number  VARCHAR NOT NULL
+    id              UUID PRIMARY KEY,
+    model           VARCHAR NOT NULL,
+    length_meters   float,
+    weight_tons     float,
+    registry_number VARCHAR NOT NULL
 );
 
 CREATE TABLE employees
@@ -32,4 +32,3 @@ CREATE TABLE reservations
     start_time      TIMESTAMP NOT NULL,
     end_time        TIMESTAMP NOT NULL
 )
-
