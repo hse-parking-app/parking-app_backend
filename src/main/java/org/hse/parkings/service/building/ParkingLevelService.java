@@ -3,6 +3,7 @@ package org.hse.parkings.service.building;
 import org.hse.parkings.dao.building.ParkingLevelRepository;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.building.ParkingLevel;
+import org.hse.parkings.model.building.ParkingSpot;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -59,5 +60,9 @@ public class ParkingLevelService {
 
     public Set<ParkingLevel> findAll() {
         return repository.findAll();
+    }
+
+    public Set<ParkingSpot> findParkingSpots(UUID levelId) {
+        return repository.findParkingSpots(levelId);
     }
 }

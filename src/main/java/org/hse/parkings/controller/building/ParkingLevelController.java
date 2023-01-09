@@ -1,6 +1,7 @@
 package org.hse.parkings.controller.building;
 
 import org.hse.parkings.model.building.ParkingLevel;
+import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.service.building.ParkingLevelService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -56,5 +57,11 @@ public class ParkingLevelController {
     ParkingLevel edit(@PathVariable UUID id, @Valid @RequestBody ParkingLevel parkingLevel) {
         parkingLevel.setId(id);
         return service.update(parkingLevel);
+    }
+
+    @GetMapping("/{levelId}/spots")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    Set<ParkingSpot> findParkingSpots(@PathVariable UUID levelId) {
+        return service.findParkingSpots(levelId);
     }
 }

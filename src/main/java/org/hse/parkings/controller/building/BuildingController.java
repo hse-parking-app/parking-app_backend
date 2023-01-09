@@ -1,11 +1,13 @@
 package org.hse.parkings.controller.building;
 
 import org.hse.parkings.model.building.Building;
+import org.hse.parkings.model.building.ParkingLevel;
 import org.hse.parkings.service.building.BuildingService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -56,5 +58,11 @@ public class BuildingController {
     Building edit(@PathVariable UUID id, @Valid @RequestBody Building building) {
         building.setId(id);
         return service.update(building);
+    }
+
+    @GetMapping("/{buildingId}/levels")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    List<ParkingLevel> findBuildingLevels(@PathVariable UUID buildingId) {
+        return service.findBuildingLevels(buildingId);
     }
 }
