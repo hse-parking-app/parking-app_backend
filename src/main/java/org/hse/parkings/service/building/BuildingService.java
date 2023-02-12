@@ -62,7 +62,14 @@ public class BuildingService {
         return repository.findAll();
     }
 
-    public List<ParkingLevel> findBuildingLevels(UUID buildingId) {
+    public List<ParkingLevel> findBuildingLevels(UUID buildingId) throws NotFoundException {
+        if (buildingCache.containsKey(buildingId)) {
+            return repository.findBuildingLevels(buildingId);
+        }
+        Building building = repository
+                .find(buildingId)
+                .orElseThrow(() -> new NotFoundException("Building with id = " + buildingId + " not found"));
+        buildingCache.put(buildingId, building);
         return repository.findBuildingLevels(buildingId);
     }
 }

@@ -63,6 +63,13 @@ public class ParkingLevelService {
     }
 
     public Set<ParkingSpot> findParkingSpots(UUID levelId) {
+        if (parkingLevelCache.containsKey(levelId)) {
+            return repository.findParkingSpots(levelId);
+        }
+        ParkingLevel parkingLevel = repository
+                .find(levelId)
+                .orElseThrow(() -> new NotFoundException("ParkingLevel with id = " + levelId + " not found"));
+        parkingLevelCache.put(levelId, parkingLevel);
         return repository.findParkingSpots(levelId);
     }
 }
