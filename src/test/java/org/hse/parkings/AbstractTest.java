@@ -6,8 +6,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Employee;
-import org.hse.parkings.model.Reservation;
-import org.hse.parkings.model.building.ParkingSpot;
+import org.hse.parkings.model.building.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.hse.parkings.utils.Cache.*;
 
@@ -25,86 +25,158 @@ import static org.hse.parkings.utils.Cache.*;
 @AutoConfigureMockMvc
 public class AbstractTest {
 
-    protected final Car carSupra = Car.builder()
-            .id(UUID.randomUUID())
+    protected final Employee employeeAlice = Employee.builder()
+            .name("Alice")
+            .email("a@a.a")
+            .password("123").build();
+    protected final Employee employeeBob = Employee.builder()
+            .name("Bob")
+            .email("goodbob@123.wow")
+            .password("123").build();
+
+    protected final Car carSupraOfAlice = Car.builder()
+            .ownerId(employeeAlice.getId())
             .model("Supra")
             .lengthMeters(1.43)
             .weightTons(1.3333)
-            .registryNumber("ac343y152").build();
+            .registryNumber("aa777a152").build();
+    protected final Car carSkylineOfAlice = Car.builder()
+            .ownerId(employeeAlice.getId())
+            .model("Skyline")
+            .lengthMeters(1.43)
+            .weightTons(1.3333)
+            .registryNumber("aa733b152").build();
+    protected final Car carAudiOfBob = Car.builder()
+            .ownerId(employeeBob.getId())
+            .model("Audi R8")
+            .lengthMeters(1.5)
+            .weightTons(1.1)
+            .registryNumber("ABC-123").build();
+    protected final Car carTeslaOfBob = Car.builder()
+            .ownerId(employeeBob.getId())
+            .model("Tesla Model X")
+            .lengthMeters(1.5)
+            .weightTons(1.1)
+            .registryNumber("ABC-125").build();
 
-    protected final Employee employee = Employee.builder()
-            .id(UUID.randomUUID())
-            .name("Pupa").build();
-    protected final ParkingSpot parkingSpot = ParkingSpot.builder()
-            .parkingNumber("1B")
-            .isFree(true).build();
-    protected final Reservation reservation = Reservation.builder()
-            .carId(carSupra.getId())
-            .employeeId(employee.getId())
-            .parkingSpotId(parkingSpot.getId())
-            .startTime(LocalDateTime.of(2031, 1, 1, 0, 0, 0))
-            .endTime(LocalDateTime.of(2031, 1, 1, 1, 0, 0)).build();
+    protected final Building building = Building.builder()
+            .name("Building")
+            .address("Street")
+            .numberOfLevels(1).build();
+    protected final ParkingLevel parkingLevelOne = ParkingLevel.builder()
+            .buildingId(building.getId())
+            .layerName("Level 1")
+            .numberOfSpots(3)
+            .canvas(new CanvasSize(1, 1)).build();
+    protected final ParkingSpot parkingSpotA = ParkingSpot.builder()
+            .levelId(parkingLevelOne.getId())
+            .buildingId(building.getId())
+            .parkingNumber("A")
+            .isFree(true)
+            .canvas(new CanvasSize(1, 1))
+            .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
+    protected final ParkingSpot parkingSpotB = ParkingSpot.builder()
+            .levelId(parkingLevelOne.getId())
+            .buildingId(building.getId())
+            .parkingNumber("B")
+            .isFree(true)
+            .canvas(new CanvasSize(1, 1))
+            .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
+    protected final ParkingSpot parkingSpotC = ParkingSpot.builder()
+            .levelId(parkingLevelOne.getId())
+            .buildingId(building.getId())
+            .parkingNumber("C")
+            .isFree(true)
+            .canvas(new CanvasSize(1, 1))
+            .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
 
     @Autowired
     protected MockMvc mockMvc;
+
     protected ObjectMapper jackson = new ObjectMapper()
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     void insert(Car car) {
         jdbcTemplate.update(
                 """
-                        INSERT INTO cars (id, model, length_meters, weight_tons, registry_number)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO cars (id, owner_id, model, length_meters, weight_tons, registry_number)
+                        VALUES (?, ?, ?, ?, ?, ?)
                         """, ps -> {
                     ps.setObject(1, car.getId());
-                    ps.setString(2, car.getModel());
-                    ps.setDouble(3, car.getLengthMeters());
-                    ps.setDouble(4, car.getWeightTons());
-                    ps.setString(5, car.getRegistryNumber());
+                    ps.setObject(2, car.getOwnerId());
+                    ps.setString(3, car.getModel());
+                    ps.setDouble(4, car.getLengthMeters());
+                    ps.setDouble(5, car.getWeightTons());
+                    ps.setString(6, car.getRegistryNumber());
                 });
     }
 
-//    void insert(Employee employee) {
-//        jdbcTemplate.update(
-//                """
-//                        INSERT INTO employees (id, name)
-//                        VALUES (?, ?)
-//                        """, ps -> {
-//                    ps.setObject(1, employee.getId());
-//                    ps.setString(2, employee.getName());
-//                });
-//    }
-//
-//    void insert(ParkingSpot parkingSpot) {
-//        jdbcTemplate.update(
-//                """
-//                        INSERT INTO parking_spots (id, parking_number, is_free)
-//                        VALUES (?, ?, ?)
-//                        """, ps -> {
-//                    ps.setObject(1, parkingSpot.getId());
-//                    ps.setString(2, parkingSpot.getParkingNumber());
-//                    ps.setBoolean(3, parkingSpot.getIsFree());
-//                });
-//    }
-//
-//    void insert(Reservation reservation) {
-//        jdbcTemplate.update(
-//                """
-//                        INSERT INTO reservations (id, car_id, employee_id, parking_spot_id, start_time, end_time)
-//                        VALUES (?, ?, ?, ?, ?, ?)
-//                        """, ps -> {
-//                    ps.setObject(1, reservation.getId());
-//                    ps.setObject(2, reservation.getCarId());
-//                    ps.setObject(3, reservation.getEmployeeId());
-//                    ps.setObject(4, reservation.getParkingSpotId());
-//                    ps.setObject(5, reservation.getStartTime());
-//                    ps.setObject(6, reservation.getEndTime());
-//                });
-//    }
+    void insert(Employee employee) {
+        jdbcTemplate.update(
+                """
+                        INSERT INTO employees (id, name, email, password)
+                        VALUES (?, ?, ?, ?)
+                        """, ps -> {
+                    ps.setObject(1, employee.getId());
+                    ps.setString(2, employee.getName());
+                    ps.setString(3, employee.getEmail());
+                    ps.setString(4, employee.getPassword());
+                });
+    }
+
+    void insert(Building building) {
+        jdbcTemplate.update(
+                """
+                        INSERT INTO buildings (id, name, address, number_of_levels)
+                        VALUES (?, ?, ?, ?)
+                        """, ps -> {
+                    ps.setObject(1, building.getId());
+                    ps.setString(2, building.getName());
+                    ps.setString(3, building.getAddress());
+                    ps.setInt(4, building.getNumberOfLevels());
+                });
+    }
+
+    void insert(ParkingLevel parkingLevel) {
+        jdbcTemplate.update(
+                """
+                        INSERT INTO parking_levels (id, building_id, layer_name, number_of_spots, canvas)
+                        VALUES (?, ?, ?, ?, ?::integer_pair)
+                        """, ps -> {
+                    ps.setObject(1, parkingLevel.getId());
+                    ps.setObject(2, parkingLevel.getBuildingId());
+                    ps.setString(3, parkingLevel.getLayerName());
+                    ps.setInt(4, parkingLevel.getNumberOfSpots());
+                    ps.setObject(5, String.format("(%d,%d)",
+                            parkingLevel.getCanvas().getWidth(),
+                            parkingLevel.getCanvas().getHeight()));
+                });
+    }
+
+    void insert(ParkingSpot parkingSpot) {
+        jdbcTemplate.update(
+                """
+                        INSERT INTO parking_spots (id, level_id, building_id, parking_number, is_free, canvas, on_canvas_coords)
+                        VALUES (?, ?, ?, ?, ?, ?::integer_pair, ?::integer_pair)
+                        """, ps -> {
+                    ps.setObject(1, parkingSpot.getId());
+                    ps.setObject(2, parkingSpot.getLevelId());
+                    ps.setObject(3, parkingSpot.getBuildingId());
+                    ps.setString(4, parkingSpot.getParkingNumber());
+                    ps.setBoolean(5, parkingSpot.getIsFree());
+                    ps.setObject(6, String.format("(%d,%d)",
+                            parkingSpot.getCanvas().getWidth(),
+                            parkingSpot.getCanvas().getHeight()));
+                    ps.setObject(7, String.format("(%d,%d)",
+                            parkingSpot.getOnCanvasCoords().getX(),
+                            parkingSpot.getOnCanvasCoords().getY()));
+                });
+    }
 
     void deleteCars() {
         jdbcTemplate.update("DELETE FROM cars");
@@ -112,6 +184,14 @@ public class AbstractTest {
 
     void deleteEmployees() {
         jdbcTemplate.update("DELETE FROM employees");
+    }
+
+    void deleteBuildings() {
+        jdbcTemplate.update("DELETE FROM buildings");
+    }
+
+    void deleteParkingLevels() {
+        jdbcTemplate.update("DELETE FROM parking_levels");
     }
 
     void deleteParkingSpots() {
@@ -123,22 +203,45 @@ public class AbstractTest {
     }
 
     @BeforeEach
-    void setUpEach() {
-        insert(carSupra);
-//        insert(employee);
-//        insert(parkingSpot);
-//        insert(reservation);
+    void setUpEach(WebApplicationContext webApplicationContext) {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .alwaysDo(MockMvcResultHandlers.print())
+                .addFilter(new CharacterEncodingFilter("UTF-8", false)).build();
+
+        insert(employeeAlice);
+        insert(employeeBob);
+
+        insert(carSupraOfAlice);
+        insert(carSkylineOfAlice);
+        insert(carAudiOfBob);
+        insert(carTeslaOfBob);
+
+        insert(building);
+        insert(parkingLevelOne);
+        insert(parkingSpotA);
+        insert(parkingSpotB);
+        insert(parkingSpotC);
     }
 
     @AfterEach
     void tearDownEach() {
-        deleteCars();
         deleteEmployees();
+        deleteCars();
+        deleteBuildings();
+        deleteParkingLevels();
         deleteParkingSpots();
         deleteReservations();
         carCache.clear();
         employeeCache.clear();
+        buildingCache.clear();
+        parkingLevelCache.clear();
         parkingSpotCache.clear();
         reservationCache.clear();
+
+        scheduledTasksCache.forEach((uuid, pair) -> {
+            pair.first().cancel(true);
+            pair.second().cancel(true);
+        });
+        scheduledTasksCache.clear();
     }
 }

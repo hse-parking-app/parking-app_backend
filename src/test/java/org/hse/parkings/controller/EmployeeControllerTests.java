@@ -1,6 +1,5 @@
 package org.hse.parkings.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hse.parkings.AbstractTest;
 import org.hse.parkings.model.Employee;
 import org.junit.jupiter.api.DisplayName;
@@ -13,102 +12,135 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @WithMockUser(username = "admin", roles = {"ADMIN"})
+@DisplayName("Employee controller")
 public class EmployeeControllerTests extends AbstractTest {
 
-    //    final Employee employee2 = new Employee("Boba");
-    final Employee employee2 = Employee.builder()
-            .name("Boba").build();
-    String employeeString;
-    String employee2String;
-
-    {
-        try {
-            employeeString = jackson.writeValueAsString(employee);
-            employee2String = jackson.writeValueAsString(employee2);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
+    private final String endpoint = "/employees";
 
     @Test
-    public void positive_getEmployeeListTest() throws Exception {
-        this.mockMvc.perform(get("/employees"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("[" + employeeString + "]")));
-    }
-
-    @Test
-    public void positive_createEmployeeTest() throws Exception {
-        this.mockMvc.perform(post("/employees")
+    @DisplayName("POST - Employee")
+    public void positive_saveEmployee() throws Exception {
+        Employee temp = employeeAlice;
+        temp.setEmail("new@test.t");
+        this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(employee2String))
+                        .content(jackson.writeValueAsString(temp)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(employee2String)));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.email").value(temp.getEmail()));
     }
 
     @Test
-    public void positive_getEmployeeTest() throws Exception {
-        this.mockMvc.perform(get("/employees/" + employee.getId().toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().string((containsString(employeeString))));
-    }
-
-    @Test
-    public void positive_editEmployeeTest() throws Exception {
-        Employee employee3 = employee2;
-        employee3.setId(employee.getId());
-        String employee3String = jackson.writeValueAsString(employee3);
-        this.mockMvc.perform(put("/employees/" + employee.getId().toString())
+    @DisplayName("POST - Employee blank fields")
+    public void negative_saveEmployeeBlankFields() throws Exception {
+        Employee temp = employeeAlice;
+        temp.setName("");
+        temp.setPassword("");
+        temp.setEmail("");
+        this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(employee3String))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString(employee3String)));
+                        .content(jackson.writeValueAsString(temp)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.messages.length()").value(3));
     }
 
     @Test
-    public void positive_deleteEmployeeTest() throws Exception {
-        this.mockMvc.perform(delete("/employees/" + employee.getId().toString()))
+    @DisplayName("POST - Employee wrong email format")
+    public void negative_saveEmployeeWrongEmailFormat() throws Exception {
+        Employee temp = employeeAlice;
+        temp.setEmail("Revolution 909");
+        this.mockMvc.perform(post(endpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(temp)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.messages.length()").value(1))
+                .andExpect(jsonPath("$.messages.[0].param").value("email"));
+    }
+
+    @Test
+    @DisplayName("GET - Employees list")
+    public void positive_getEmployeesList() throws Exception {
+        this.mockMvc.perform(get(endpoint))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$.[0].id").exists())
+                .andExpect(jsonPath("$.[0].name").exists())
+                .andExpect(jsonPath("$.[0].email").exists())
+                .andExpect(jsonPath("$.[0].password").exists());
+    }
+
+    @Test
+    @DisplayName("GET - Employee by id")
+    public void positive_getEmployeeById() throws Exception {
+        this.mockMvc.perform(get(endpoint + "/" + employeeAlice.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(jackson.writeValueAsString(employeeAlice))));
+    }
+
+    @Test
+    @DisplayName("GET PUT DELETE - Not existing id Employee")
+    public void negative_getEmployeeNotExistingId() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        this.mockMvc.perform(get(endpoint + "/" + uuid))
+                .andExpect(status().isNotFound());
+        this.mockMvc.perform(put(endpoint + "/" + uuid)
+                        .content(jackson.writeValueAsString(employeeAlice))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        this.mockMvc.perform(delete(endpoint + "/" + uuid))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void negative_notValidBodyTest() throws Exception {
-        this.mockMvc.perform(post("/employees")
-                        .content("")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(put("/employees/" + employee.getId().toString())
-                        .content("")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+    @DisplayName("PUT - Employee")
+    public void positive_editEmployee() throws Exception {
+        Employee temp = employeeAlice;
+        temp.setName("Alisa");
+        String tempEmployeeString = jackson.writeValueAsString(temp);
+        this.mockMvc.perform(put(endpoint + "/" + temp.getId().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(tempEmployeeString))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(tempEmployeeString)));
     }
 
     @Test
-    @DisplayName("Content type error")
-    public void negative_contentTypeErrorTest() throws Exception {
-        this.mockMvc.perform(post("/employees")
-                        .content(""))
-                .andExpect(status().isUnsupportedMediaType());
-        this.mockMvc.perform(put("/employees/" + employee.getId().toString())
-                        .content(""))
-                .andExpect(status().isUnsupportedMediaType());
-    }
-
-    @Test
-    public void negative_idNotFoundTest() throws Exception {
-        String randomUuid = UUID.randomUUID().toString();
-        this.mockMvc.perform(get("/employees/" + randomUuid))
-                .andExpect(status().isNotFound());
-        this.mockMvc.perform(put("/employees/" + randomUuid)
-                        .content(employeeString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-        this.mockMvc.perform(delete("/employees/" + randomUuid))
+    @DisplayName("DELETE - Employee")
+    public void positive_deleteEmployee() throws Exception {
+        this.mockMvc.perform(delete(endpoint + "/" + employeeAlice.getId().toString()))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Employee Content type error")
+    public void negative_contentTypeError() throws Exception {
+        this.mockMvc.perform(post(endpoint)
+                        .content(""))
+                .andExpect(status().isUnsupportedMediaType());
+        this.mockMvc.perform(put(endpoint + "/" + employeeAlice.getId().toString())
+                        .content(""))
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    @DisplayName("Employee Not valid body")
+    public void negative_notValidBody() throws Exception {
+        this.mockMvc.perform(post(endpoint)
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        this.mockMvc.perform(put(endpoint + "/" + employeeAlice.getId().toString())
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }
