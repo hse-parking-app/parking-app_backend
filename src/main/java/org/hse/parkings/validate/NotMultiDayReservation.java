@@ -9,10 +9,10 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = DurationValidator.class)
-public @interface DurationIsLess24Hours {
+@Constraint(validatedBy = MultiDayValidator.class)
+public @interface NotMultiDayReservation {
 
-    String message() default "{org.hse.parkings.validate.DurationIsLess24Hours.message}";
+    String message() default "{org.hse.parkings.validate.NotMultiDayReservation.message}";
 
     Class<?>[] groups() default {};
 

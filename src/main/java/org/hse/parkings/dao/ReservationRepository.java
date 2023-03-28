@@ -3,6 +3,7 @@ package org.hse.parkings.dao;
 import org.apache.ibatis.annotations.*;
 import org.hse.parkings.model.Reservation;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -10,13 +11,15 @@ import java.util.UUID;
 @Mapper
 public interface ReservationRepository {
 
-    @Select("SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations " +
-            "WHERE id = #{id}::uuid")
+    @Select("""
+            SELECT id, car_id, employee_id, spot_id, start_time, end_time FROM reservations
+            WHERE id = #{id}::uuid
+            """)
     @Results(id = "reservationResultMap", value = {
             @Result(column = "id", property = "id"),
             @Result(column = "car_id", property = "carId"),
             @Result(column = "employee_id", property = "employeeId"),
-            @Result(column = "parking_spot_id", property = "parkingSpotId"),
+            @Result(column = "spot_id", property = "parkingSpotId"),
             @Result(column = "start_time", property = "startTime"),
             @Result(column = "end_time", property = "endTime"),
     })
@@ -26,14 +29,18 @@ public interface ReservationRepository {
     @ResultMap("reservationResultMap")
     Set<Reservation> findAll();
 
-    @Insert("INSERT INTO reservations (id, car_id, employee_id, parking_spot_id, start_time, end_time) " +
-            "VALUES (#{id}::uuid, #{carId}::uuid, #{employeeId}::uuid, #{parkingSpotId}::uuid, #{startTime}, #{endTime})")
+    @Insert("""
+            INSERT INTO reservations (id, car_id, employee_id, spot_id, start_time, end_time)
+            VALUES (#{id}::uuid, #{carId}::uuid, #{employeeId}::uuid, #{parkingSpotId}::uuid, #{startTime}, #{endTime})
+            """)
     void save(Reservation reservation);
 
-    @Update("UPDATE reservations " +
-            "SET car_id = #{carId}::uuid, employee_id = #{employeeId}::uuid, parking_spot_id = #{parkingSpotId}::uuid, " +
-            "start_time = #{startTime}, end_time = #{endTime} " +
-            "WHERE id = #{id}::uuid")
+    @Update("""
+            UPDATE reservations
+            SET car_id = #{carId}::uuid, employee_id = #{employeeId}::uuid, spot_id = #{parkingSpotId}::uuid,
+            start_time = #{startTime}, end_time = #{endTime}
+            WHERE id = #{id}::uuid
+            """)
     void update(Reservation reservation);
 
     @Delete("DELETE FROM reservations WHERE id = #{id}::uuid")
@@ -42,10 +49,13 @@ public interface ReservationRepository {
     @Delete("DELETE FROM reservations")
     void deleteAll();
 
+    @Delete("DELETE FROM reservations WHERE end_time < #{localDateTime}")
+    void deleteExpiredReservations(LocalDateTime localDateTime);
+
     @Select("""
-            SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations
-            WHERE parking_spot_id = #{parkingSpotId}::uuid AND
-                ((#{startTime} < start_time AND #{endTime} > start_time) OR (#{startTime} > start_time AND #{startTime} < end_time))
+            SELECT id, car_id, employee_id, spot_id, start_time, end_time FROM reservations
+            WHERE spot_id = #{parkingSpotId}::uuid AND
+                ((#{startTime} <= start_time AND #{endTime} > start_time) OR (#{startTime} >= start_time AND #{startTime} < end_time))
                 AND id <> #{id}::uuid
             LIMIT 1
             """)
@@ -53,13 +63,12 @@ public interface ReservationRepository {
     Set<Reservation> getParkingSpotTimeCollisions(Reservation reservation);
 
     @Select("""
-            SELECT id, car_id, employee_id, parking_spot_id, start_time, end_time FROM reservations
+            SELECT id, car_id, employee_id, spot_id, start_time, end_time FROM reservations
             WHERE car_id = #{carId}::uuid AND
-                ((#{startTime} < start_time AND #{endTime} > start_time) OR (#{startTime} > start_time AND #{startTime} < end_time))
+                ((#{startTime} <= start_time AND #{endTime} > start_time) OR (#{startTime} >= start_time AND #{startTime} < end_time))
                 AND id <> #{id}::uuid
             LIMIT 1
             """)
     @ResultMap("reservationResultMap")
     Set<Reservation> getCarTimeCollisions(Reservation reservation);
-
 }

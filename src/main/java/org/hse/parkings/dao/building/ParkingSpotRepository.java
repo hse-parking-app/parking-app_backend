@@ -12,7 +12,11 @@ import java.util.UUID;
 @Mapper
 public interface ParkingSpotRepository {
 
-    @Select("SELECT id, level_id, building_id, parking_number, is_free, canvas, on_canvas_coords FROM parking_spots WHERE id = #{id}::uuid")
+    @Select("""
+            SELECT id, level_id, building_id, parking_number, is_free, canvas, on_canvas_coords FROM parking_spots
+            WHERE id = #{id}::uuid
+            """
+    )
     @Results(id = "parkingSpotResultMap", value = {
             @Result(column = "id", property = "id"),
             @Result(column = "level_id", property = "levelId"),
@@ -32,8 +36,7 @@ public interface ParkingSpotRepository {
             INSERT INTO parking_spots (id, level_id, building_id, parking_number, is_free, canvas, on_canvas_coords)
             VALUES (#{id}::uuid, #{levelId}::uuid, #{buildingId}::uuid, #{parkingNumber}, #{isFree},
             #{canvas}::integer_pair, #{onCanvasCoords}::integer_pair)
-            """
-    )
+            """)
     void save(ParkingSpot parkingSpot);
 
     @Update("""
@@ -41,8 +44,7 @@ public interface ParkingSpotRepository {
             level_id = #{levelId}, building_id = #{buildingId}, parking_number = #{parkingNumber}, is_free = #{isFree},
             canvas = #{canvas}::integer_pair, on_canvas_coords = #{onCanvasCoords}::integer_pair
             WHERE id = #{id}::uuid
-            """
-    )
+            """)
     void update(ParkingSpot parkingSpot);
 
     @Delete("DELETE FROM parking_spots WHERE id = #{id}::uuid")
@@ -50,4 +52,13 @@ public interface ParkingSpotRepository {
 
     @Delete("DELETE FROM parking_spots")
     void deleteAll();
+
+    @Update("UPDATE parking_spots SET is_free = true")
+    void freeAllParkingSpots();
+
+    @Update("UPDATE parking_spots SET is_free = false WHERE id = #{id}::uuid")
+    void occupySpot(UUID id);
+
+    @Update("UPDATE parking_spots SET is_free = true WHERE id = #{id}::uuid")
+    void freeSpot(UUID id);
 }

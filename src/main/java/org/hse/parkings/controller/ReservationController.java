@@ -1,12 +1,13 @@
 package org.hse.parkings.controller;
 
-import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Reservation;
 import org.hse.parkings.service.ReservationService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public class ReservationController {
 
     @GetMapping
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    Set<Reservation> getAll() throws NotFoundException {
+    Set<Reservation> getAll() {
         return service.findAll();
     }
 
@@ -46,11 +47,11 @@ public class ReservationController {
         return service.find(id);
     }
 
-    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}")
     @Secured("ROLE_ADMIN")
-    Reservation edit(@PathVariable UUID id, @Valid @RequestBody Reservation reservation) {
-        reservation.setId(id);
-        return service.update(reservation);
+    Reservation extendReservation(@PathVariable UUID id,
+                                  @RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+        return service.extendReservation(id, endTime);
     }
 
     @DeleteMapping("/{id}")

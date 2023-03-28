@@ -15,6 +15,9 @@ public class Car {
     @Builder.Default
     UUID id = UUID.randomUUID();
 
+    @NotNull(message = "Car must be connected to owner employee via UUID")
+    UUID ownerId;
+
     @NotNull(message = "Car model is required parameter")
     @NotBlank(message = "Model cannot be blank")
     String model;

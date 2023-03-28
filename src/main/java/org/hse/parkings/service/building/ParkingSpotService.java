@@ -1,5 +1,7 @@
 package org.hse.parkings.service.building;
 
+import org.hse.parkings.dao.building.BuildingRepository;
+import org.hse.parkings.dao.building.ParkingLevelRepository;
 import org.hse.parkings.dao.building.ParkingSpotRepository;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.building.ParkingSpot;
@@ -15,11 +17,19 @@ public class ParkingSpotService {
 
     private final ParkingSpotRepository repository;
 
-    public ParkingSpotService(ParkingSpotRepository repository) {
-        this.repository = repository;
+    private final ParkingLevelRepository parkingLevelRepository;
+
+    private final BuildingRepository buildingRepository;
+
+    public ParkingSpotService(ParkingSpotRepository parkingSpotRepository,
+                              ParkingLevelRepository parkingLevelRepository,
+                              BuildingRepository buildingRepository) {
+        this.repository = parkingSpotRepository;
+        this.parkingLevelRepository = parkingLevelRepository;
+        this.buildingRepository = buildingRepository;
     }
 
-    public ParkingSpot save(ParkingSpot parkingSpot) {
+    public ParkingSpot save(ParkingSpot parkingSpot) throws NotFoundException {
         ParkingSpot toSave = ParkingSpot.builder()
                 .levelId(parkingSpot.getLevelId())
                 .buildingId(parkingSpot.getBuildingId())
@@ -27,12 +37,20 @@ public class ParkingSpotService {
                 .isFree(parkingSpot.getIsFree())
                 .canvas(parkingSpot.getCanvas())
                 .onCanvasCoords(parkingSpot.getOnCanvasCoords()).build();
+        parkingLevelRepository.find(toSave.getLevelId())
+                .orElseThrow(() -> new NotFoundException("ParkingLevel with id = " + toSave.getLevelId() + " not found"));
+        buildingRepository.find(toSave.getBuildingId())
+                .orElseThrow(() -> new NotFoundException("Building with id = " + toSave.getBuildingId() + " not found"));
         repository.save(toSave);
         parkingSpotCache.remove(toSave.getId());
         return findParkingSpot(toSave.getId());
     }
 
-    public ParkingSpot update(ParkingSpot parkingSpot) {
+    public ParkingSpot update(ParkingSpot parkingSpot) throws NotFoundException {
+        parkingLevelRepository.find(parkingSpot.getLevelId())
+                .orElseThrow(() -> new NotFoundException("ParkingLevel with id = " + parkingSpot.getLevelId() + " not found"));
+        buildingRepository.find(parkingSpot.getBuildingId())
+                .orElseThrow(() -> new NotFoundException("Building with id = " + parkingSpot.getBuildingId() + " not found"));
         repository.update(parkingSpot);
         parkingSpotCache.remove(parkingSpot.getId());
         return findParkingSpot(parkingSpot.getId());

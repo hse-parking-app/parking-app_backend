@@ -30,15 +30,13 @@ public interface EmployeeRepository {
     @Insert("""
             INSERT INTO employees (id, name, email, password)
             VALUES (#{id}::uuid, #{name}, #{email}, #{password})
-            """
-    )
+            """)
     void save(Employee employee);
 
     @Update("""
             UPDATE employees SET name = #{name}, email = #{email}, password = #{password}
             WHERE id = #{id}::uuid
-            """
-    )
+            """)
     void update(Employee employee);
 
     @Delete("DELETE FROM employees WHERE id = #{id}::uuid")

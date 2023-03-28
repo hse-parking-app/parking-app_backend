@@ -1,18 +1,20 @@
-CREATE TABLE cars
-(
-    id              UUID PRIMARY KEY,
-    model           VARCHAR NOT NULL,
-    length_meters   FLOAT,
-    weight_tons     FLOAT,
-    registry_number VARCHAR NOT NULL
-);
-
 CREATE TABLE employees
 (
     id       UUID PRIMARY KEY,
     name     VARCHAR        NOT NULL,
     email    VARCHAR UNIQUE NOT NULL,
     password VARCHAR        NOT NULL
+);
+
+CREATE TABLE cars
+(
+    id              UUID PRIMARY KEY,
+    owner_id        UUID    NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES employees (id) ON DELETE CASCADE,
+    model           VARCHAR NOT NULL,
+    length_meters   FLOAT,
+    weight_tons     FLOAT,
+    registry_number VARCHAR NOT NULL
 );
 
 CREATE TABLE buildings
@@ -23,11 +25,7 @@ CREATE TABLE buildings
     number_of_levels INTEGER NOT NULL
 );
 
-CREATE TYPE integer_pair AS
-    (
-    first INTEGER,
-    second INTEGER
-    );
+CREATE TYPE integer_pair AS (first INTEGER, second INTEGER);
 
 CREATE TABLE parking_levels
 (
@@ -52,15 +50,15 @@ CREATE TABLE parking_spots
     on_canvas_coords integer_pair NOT NULL
 );
 
--- CREATE TABLE reservations
--- (
---     id              UUID PRIMARY KEY,
---     car_id          UUID      NOT NULL,
---     FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
---     employee_id     UUID      NOT NULL,
---     FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE,
---     parking_spot_id UUID      NOT NULL,
---     FOREIGN KEY (parking_spot_id) REFERENCES parking_spots (id) ON DELETE CASCADE,
---     start_time      TIMESTAMP NOT NULL,
---     end_time        TIMESTAMP NOT NULL
--- )
+CREATE TABLE reservations
+(
+    id          UUID PRIMARY KEY,
+    car_id      UUID      NOT NULL,
+    FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
+    employee_id UUID      NOT NULL,
+    FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE,
+    spot_id     UUID      NOT NULL,
+    FOREIGN KEY (spot_id) REFERENCES parking_spots (id) ON DELETE CASCADE,
+    start_time  TIMESTAMP NOT NULL,
+    end_time    TIMESTAMP NOT NULL
+);

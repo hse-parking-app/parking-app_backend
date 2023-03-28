@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = WeekendValidator.class)
 public @interface NotWeekends {
 
-    String message() default "Cannot book a parking spot on Saturday and Sunday";
+    String message() default "{org.hse.parkings.validate.NotWeekends.message}";
 
     Class<?>[] groups() default {};
 

@@ -1,6 +1,5 @@
 package org.hse.parkings.controller;
 
-import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Employee;
 import org.hse.parkings.service.EmployeeService;
 import org.springframework.security.access.annotation.Secured;
@@ -24,7 +23,7 @@ public class EmployeeController {
 
     @GetMapping
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    Set<Employee> getAll() throws NotFoundException {
+    Set<Employee> getAll() {
         return service.findAll();
     }
 

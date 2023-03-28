@@ -10,9 +10,10 @@ import java.util.UUID;
 @Mapper
 public interface CarRepository {
 
-    @Select("SELECT id, model, length_meters, weight_tons, registry_number FROM cars WHERE id = #{id}::uuid")
+    @Select("SELECT id, owner_id, model, length_meters, weight_tons, registry_number FROM cars WHERE id = #{id}::uuid")
     @Results(id = "carResultMap", value = {
             @Result(column = "id", property = "id"),
+            @Result(column = "owner_id", property = "ownerId"),
             @Result(column = "model", property = "model"),
             @Result(column = "length_meters", property = "lengthMeters"),
             @Result(column = "weight_tons", property = "weightTons"),
@@ -25,10 +26,9 @@ public interface CarRepository {
     Set<Car> findAll();
 
     @Insert("""
-            INSERT INTO cars (id, model, length_meters, weight_tons, registry_number)
-            VALUES (#{id}::uuid, #{model}, #{lengthMeters}, #{weightTons}, #{registryNumber})
-            """
-    )
+            INSERT INTO cars (id, owner_id, model, length_meters, weight_tons, registry_number)
+            VALUES (#{id}::uuid, #{ownerId}::uuid, #{model}, #{lengthMeters}, #{weightTons}, #{registryNumber})
+            """)
     void save(Car car);
 
     @Update("""
@@ -36,8 +36,7 @@ public interface CarRepository {
             SET model = #{model}, length_meters = #{lengthMeters},
             weight_tons = #{weightTons}, registry_number = #{registryNumber}
             WHERE id = #{id}::uuid
-            """
-    )
+            """)
     void update(Car car);
 
     @Delete("DELETE FROM cars WHERE id = #{id}::uuid")

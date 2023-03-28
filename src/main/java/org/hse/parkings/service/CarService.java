@@ -1,6 +1,7 @@
 package org.hse.parkings.service;
 
 import org.hse.parkings.dao.CarRepository;
+import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Car;
 import org.springframework.stereotype.Service;
@@ -13,36 +14,44 @@ import static org.hse.parkings.utils.Cache.carCache;
 @Service
 public class CarService {
 
-    private final CarRepository repository;
+    private final CarRepository carRepository;
 
-    public CarService(CarRepository repository) {
-        this.repository = repository;
+    private final EmployeeRepository employeeRepository;
+
+    public CarService(CarRepository carRepository, EmployeeRepository employeeRepository) {
+        this.carRepository = carRepository;
+        this.employeeRepository = employeeRepository;
     }
 
-    public Car save(Car car) {
+    public Car save(Car car) throws NotFoundException {
         Car toSave = Car.builder()
+                .ownerId(car.getOwnerId())
                 .model(car.getModel())
                 .lengthMeters(car.getLengthMeters())
                 .weightTons(car.getWeightTons())
                 .registryNumber(car.getRegistryNumber()).build();
-        repository.save(toSave);
+        employeeRepository.findById(toSave.getOwnerId())
+                .orElseThrow(() -> new NotFoundException("Employee with id = " + toSave.getOwnerId() + " not found"));
+        carRepository.save(toSave);
         carCache.remove(toSave.getId());
         return findCar(toSave.getId());
     }
 
-    public Car update(Car car) {
-        repository.update(car);
+    public Car update(Car car) throws NotFoundException {
+        employeeRepository.findById(car.getOwnerId())
+                .orElseThrow(() -> new NotFoundException("Employee with id = " + car.getOwnerId() + " not found"));
+        carRepository.update(car);
         carCache.remove(car.getId());
         return findCar(car.getId());
     }
 
     public void delete(UUID id) {
-        repository.delete(id);
+        carRepository.delete(id);
         carCache.remove(id);
     }
 
     public void deleteAll() {
-        repository.deleteAll();
+        carRepository.deleteAll();
         carCache.clear();
     }
 
@@ -50,7 +59,7 @@ public class CarService {
         if (carCache.containsKey(id)) {
             return carCache.get(id);
         }
-        Car car = repository
+        Car car = carRepository
                 .find(id)
                 .orElseThrow(() -> new NotFoundException("Car with id = " + id + " not found"));
         carCache.put(id, car);
@@ -58,6 +67,6 @@ public class CarService {
     }
 
     public Set<Car> findAll() {
-        return repository.findAll();
+        return carRepository.findAll();
     }
 }

@@ -9,6 +9,7 @@ import org.hse.parkings.model.building.ParkingSpot;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 public class Cache {
 
@@ -18,4 +19,6 @@ public class Cache {
     public static ConcurrentHashMap<UUID, Building> buildingCache = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<UUID, ParkingLevel> parkingLevelCache = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<UUID, ParkingSpot> parkingSpotCache = new ConcurrentHashMap<>();
+
+    public static ConcurrentHashMap<UUID, Pair<ScheduledFuture<?>, ScheduledFuture<?>>> scheduledTasksCache = new ConcurrentHashMap<>();
 }

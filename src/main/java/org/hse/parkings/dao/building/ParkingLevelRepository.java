@@ -29,8 +29,7 @@ public interface ParkingLevelRepository {
     @Insert("""
             INSERT INTO parking_levels (id, building_id, layer_name, number_of_spots, canvas)
             VALUES (#{id}::uuid, #{buildingId}::uuid, #{layerName}, #{numberOfSpots}, #{canvas}::integer_pair)
-            """
-    )
+            """)
     void save(ParkingLevel parkingLevel);
 
     @Update("""
@@ -38,8 +37,7 @@ public interface ParkingLevelRepository {
             SET building_id = #{buildingId}, layer_name = #{layerName}, number_of_spots = #{numberOfSpots},
             canvas = #{canvas}::integer_pair
             WHERE id = #{id}::uuid
-            """
-    )
+            """)
     void update(ParkingLevel parkingLevel);
 
     @Delete("DELETE FROM parking_levels WHERE id = #{id}::uuid")

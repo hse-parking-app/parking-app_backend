@@ -22,6 +22,10 @@ spring:
 
 ---
 
+spring:
+  jackson:
+    time-zone: Europe/Moscow
+
 auth:
   user:
     login: user
@@ -29,7 +33,6 @@ auth:
   admin:
     login: admin
     password: admin
-
 
 mybatis:
   type-handlers-package: org.hse.parkings.handler

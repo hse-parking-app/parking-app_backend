@@ -28,16 +28,14 @@ public interface BuildingRepository {
     @Insert("""
             INSERT INTO buildings(id, name, address, number_of_levels)
             VALUES (#{id}::uuid, #{name}, #{address}, #{numberOfLevels})
-            """
-    )
+            """)
     void save(Building building);
 
     @Update("""
             UPDATE buildings
             SET name = #{name}, address = #{address}, number_of_levels = #{numberOfLevels}
             WHERE id = #{id}::uuid
-            """
-    )
+            """)
     void update(Building building);
 
     @Delete("DELETE FROM buildings WHERE id = #{id}::uuid")
