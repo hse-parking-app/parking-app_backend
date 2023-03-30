@@ -25,6 +25,9 @@ public class ParkingSpot {
     @NotBlank(message = "Parking number cannot be blank")
     String parkingNumber;
 
+    @NotNull(message = "isAvailable is required parameter")
+    Boolean isAvailable;
+
     @NotNull(message = "isFree is required parameter")
     Boolean isFree;
 

@@ -45,6 +45,7 @@ CREATE TABLE parking_spots
     building_id      UUID         NOT NULL,
     FOREIGN KEY (building_id) REFERENCES buildings (id) ON DELETE CASCADE,
     parking_number   VARCHAR      NOT NULL,
+    is_available     BOOLEAN      NOT NULL,
     is_free          BOOLEAN      NOT NULL,
     canvas           integer_pair NOT NULL,
     on_canvas_coords integer_pair NOT NULL

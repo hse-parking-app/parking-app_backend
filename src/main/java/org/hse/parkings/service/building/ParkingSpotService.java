@@ -34,6 +34,7 @@ public class ParkingSpotService {
                 .levelId(parkingSpot.getLevelId())
                 .buildingId(parkingSpot.getBuildingId())
                 .parkingNumber(parkingSpot.getParkingNumber())
+                .isAvailable(parkingSpot.getIsAvailable())
                 .isFree(parkingSpot.getIsFree())
                 .canvas(parkingSpot.getCanvas())
                 .onCanvasCoords(parkingSpot.getOnCanvasCoords()).build();

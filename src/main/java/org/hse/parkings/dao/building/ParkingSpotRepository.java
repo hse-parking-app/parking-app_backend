@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface ParkingSpotRepository {
 
     @Select("""
-            SELECT id, level_id, building_id, parking_number, is_free, canvas, on_canvas_coords FROM parking_spots
+            SELECT id, level_id, building_id, parking_number, is_available, is_free, canvas, on_canvas_coords FROM parking_spots
             WHERE id = #{id}::uuid
             """
     )
@@ -22,6 +22,7 @@ public interface ParkingSpotRepository {
             @Result(column = "level_id", property = "levelId"),
             @Result(column = "building_id", property = "buildingId"),
             @Result(column = "parking_number", property = "parkingNumber"),
+            @Result(column = "is_available", property = "isAvailable"),
             @Result(column = "is_free", property = "isFree"),
             @Result(column = "canvas", property = "canvas", typeHandler = CanvasSizeTypeHandler.class),
             @Result(column = "on_canvas_coords", property = "onCanvasCoords", typeHandler = OnCanvasCoordsTypeHandler.class)
@@ -33,16 +34,17 @@ public interface ParkingSpotRepository {
     Set<ParkingSpot> findAll();
 
     @Insert("""
-            INSERT INTO parking_spots (id, level_id, building_id, parking_number, is_free, canvas, on_canvas_coords)
-            VALUES (#{id}::uuid, #{levelId}::uuid, #{buildingId}::uuid, #{parkingNumber}, #{isFree},
+            INSERT INTO parking_spots (id, level_id, building_id, parking_number, is_available, is_free, canvas, on_canvas_coords)
+            VALUES (#{id}::uuid, #{levelId}::uuid, #{buildingId}::uuid, #{parkingNumber}, #{isAvailable}, #{isFree},
             #{canvas}::integer_pair, #{onCanvasCoords}::integer_pair)
             """)
     void save(ParkingSpot parkingSpot);
 
     @Update("""
             UPDATE parking_spots SET
-            level_id = #{levelId}, building_id = #{buildingId}, parking_number = #{parkingNumber}, is_free = #{isFree},
-            canvas = #{canvas}::integer_pair, on_canvas_coords = #{onCanvasCoords}::integer_pair
+            level_id = #{levelId}, building_id = #{buildingId}, parking_number = #{parkingNumber},
+            is_available = #{isAvailable}, is_free = #{isFree}, canvas = #{canvas}::integer_pair,
+            on_canvas_coords = #{onCanvasCoords}::integer_pair
             WHERE id = #{id}::uuid
             """)
     void update(ParkingSpot parkingSpot);
