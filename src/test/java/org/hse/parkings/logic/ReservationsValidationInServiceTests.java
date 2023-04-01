@@ -659,4 +659,31 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservationTwo.getCarId().toString()));
     }
+
+    @Test
+    @DisplayName("User reserves unavailable spot")
+    public void positive_userReservesUnavailableSpot() throws Exception {
+        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
+        int i = 0;
+        while (dayOfWeek != DayOfWeek.MONDAY) {
+            i++;
+            dayOfWeek = dayOfWeek.plus(1);
+        }
+        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
+
+        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        Reservation reservation = Reservation.builder()
+                .carId(carTeslaOfBob.getId())
+                .employeeId(employeeBob.getId())
+                .parkingSpotId(parkingSpotC.getId())
+                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
+                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(10)).build();
+
+        this.mockMvc.perform(post(endpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(reservation)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
 }

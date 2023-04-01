@@ -72,6 +72,7 @@ public class AbstractTest {
             .levelId(parkingLevelOne.getId())
             .buildingId(building.getId())
             .parkingNumber("A")
+            .isAvailable(true)
             .isFree(true)
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
@@ -79,6 +80,7 @@ public class AbstractTest {
             .levelId(parkingLevelOne.getId())
             .buildingId(building.getId())
             .parkingNumber("B")
+            .isAvailable(true)
             .isFree(true)
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
@@ -86,6 +88,7 @@ public class AbstractTest {
             .levelId(parkingLevelOne.getId())
             .buildingId(building.getId())
             .parkingNumber("C")
+            .isAvailable(false)
             .isFree(true)
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
@@ -161,18 +164,19 @@ public class AbstractTest {
     void insert(ParkingSpot parkingSpot) {
         jdbcTemplate.update(
                 """
-                        INSERT INTO parking_spots (id, level_id, building_id, parking_number, is_free, canvas, on_canvas_coords)
-                        VALUES (?, ?, ?, ?, ?, ?::integer_pair, ?::integer_pair)
+                        INSERT INTO parking_spots (id, level_id, building_id, parking_number, is_available, is_free, canvas, on_canvas_coords)
+                        VALUES (?, ?, ?, ?, ?, ?, ?::integer_pair, ?::integer_pair)
                         """, ps -> {
                     ps.setObject(1, parkingSpot.getId());
                     ps.setObject(2, parkingSpot.getLevelId());
                     ps.setObject(3, parkingSpot.getBuildingId());
                     ps.setString(4, parkingSpot.getParkingNumber());
-                    ps.setBoolean(5, parkingSpot.getIsFree());
-                    ps.setObject(6, String.format("(%d,%d)",
+                    ps.setObject(5, parkingSpot.getIsAvailable());
+                    ps.setBoolean(6, parkingSpot.getIsFree());
+                    ps.setObject(7, String.format("(%d,%d)",
                             parkingSpot.getCanvas().getWidth(),
                             parkingSpot.getCanvas().getHeight()));
-                    ps.setObject(7, String.format("(%d,%d)",
+                    ps.setObject(8, String.format("(%d,%d)",
                             parkingSpot.getOnCanvasCoords().getX(),
                             parkingSpot.getOnCanvasCoords().getY()));
                 });

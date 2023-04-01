@@ -6,6 +6,7 @@ import org.hse.parkings.dao.building.ParkingSpotRepository;
 import org.hse.parkings.model.Reservation;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,15 +151,15 @@ public class ReservationsLogicTests extends AbstractTest {
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(6))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(12)).build();
+                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
+                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(9)).build();
 
         Reservation reservationTwo = Reservation.builder()
                 .carId(carTeslaOfBob.getId())
                 .employeeId(employeeBob.getId())
                 .parkingSpotId(parkingSpotB.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(9))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(15)).build();
+                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(6))
+                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(12)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -174,7 +175,7 @@ public class ReservationsLogicTests extends AbstractTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservationTwo.getCarId().toString()));
 
-        await().atMost(6, TimeUnit.SECONDS).until(() ->
+        await().atMost(4, TimeUnit.SECONDS).until(() ->
                 !parkingSpotRepository.find(reservation.getParkingSpotId()).get().getIsFree());
 
         await().atMost(4, TimeUnit.SECONDS).until(() ->
@@ -200,7 +201,9 @@ public class ReservationsLogicTests extends AbstractTest {
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
+
         ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        System.out.println(zonedDateTime.toLocalDateTime());
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -232,7 +235,14 @@ public class ReservationsLogicTests extends AbstractTest {
         await().atMost(4, TimeUnit.SECONDS).until(() ->
                 !parkingSpotRepository.find(reservation.getParkingSpotId()).get().getIsFree());
 
-        await().atMost(4, TimeUnit.SECONDS).until(() ->
+        await().pollDelay(3, TimeUnit.SECONDS).untilAsserted(() -> Assertions.assertTrue(true));
+
+        await().atMost(2, TimeUnit.SECONDS).until(() ->
+                !parkingSpotRepository.find(reservationTwo.getParkingSpotId()).get().getIsFree());
+
+        await().pollDelay(3, TimeUnit.SECONDS).untilAsserted(() -> Assertions.assertTrue(true));
+
+        await().atMost(2, TimeUnit.SECONDS).until(() ->
                 parkingSpotRepository.find(reservationTwo.getParkingSpotId()).get().getIsFree());
     }
 
@@ -281,7 +291,14 @@ public class ReservationsLogicTests extends AbstractTest {
         await().atMost(4, TimeUnit.SECONDS).until(() ->
                 !parkingSpotRepository.find(reservation.getParkingSpotId()).get().getIsFree());
 
-        await().atMost(4, TimeUnit.SECONDS).until(() ->
+        await().pollDelay(3, TimeUnit.SECONDS).untilAsserted(() -> Assertions.assertTrue(true));
+
+        await().atMost(2, TimeUnit.SECONDS).until(() ->
+                !parkingSpotRepository.find(reservationTwo.getParkingSpotId()).get().getIsFree());
+
+        await().pollDelay(3, TimeUnit.SECONDS).untilAsserted(() -> Assertions.assertTrue(true));
+
+        await().atMost(2, TimeUnit.SECONDS).until(() ->
                 parkingSpotRepository.find(reservationTwo.getParkingSpotId()).get().getIsFree());
     }
 
