@@ -20,5 +20,6 @@ public class Cache {
     public static ConcurrentHashMap<UUID, ParkingLevel> parkingLevelCache = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<UUID, ParkingSpot> parkingSpotCache = new ConcurrentHashMap<>();
 
-    public static ConcurrentHashMap<UUID, Pair<ScheduledFuture<?>, ScheduledFuture<?>>> scheduledTasksCache = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<UUID, Pair<ScheduledFuture<?>, ScheduledFuture<?>>> scheduledTasksCache
+            = new ConcurrentHashMap<>();
 }

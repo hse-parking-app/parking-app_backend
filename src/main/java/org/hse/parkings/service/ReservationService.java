@@ -9,13 +9,14 @@ import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Employee;
 import org.hse.parkings.model.Reservation;
+import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.hse.parkings.utils.Log;
+import org.hse.parkings.utils.PBQElement;
 import org.hse.parkings.utils.Pair;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ConstraintViolation;
@@ -26,6 +27,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 
 import static org.hse.parkings.utils.Cache.*;
@@ -47,6 +49,23 @@ public class ReservationService {
 
     private final Validator validator;
 
+    private final PriorityBlockingQueue<PBQElement> reservationsQueue = new PriorityBlockingQueue<>(100,
+            (one, two) -> {
+                int isEndTimeComp = one.getIsEndTime().compareTo(two.getIsEndTime());
+                int timeComp = one.getExecutionTime().compareTo(two.getExecutionTime());
+                if (isEndTimeComp == 0) {
+                    return timeComp;
+                }
+                if (timeComp == 0) {
+                    if (isEndTimeComp < 0) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }
+                return timeComp;
+            });
+
     public ReservationService(ReservationRepository reservationRepository,
                               CarRepository carRepository,
                               EmployeeRepository employeeRepository,
@@ -63,8 +82,15 @@ public class ReservationService {
         this.validator = validator;
     }
 
-    public ScheduledFuture<?> scheduleTask(Runnable task, Date time) {
+    private ScheduledFuture<?> scheduleTask(Runnable task, Date time) {
         return taskScheduler.schedule(task, time);
+    }
+
+    private synchronized void executeOnTop() {
+        PBQElement element = reservationsQueue.poll();
+        if (element != null) {
+            element.getRunnable().run();
+        }
     }
 
     public Reservation save(Reservation reservation) throws EngagedException, NotFoundException {
@@ -80,8 +106,12 @@ public class ReservationService {
                 .orElseThrow(() -> new NotFoundException("Car with id = " + toSave.getCarId() + " not found"));
         Employee employee = employeeRepository.findById(toSave.getEmployeeId())
                 .orElseThrow(() -> new NotFoundException("Employee with id = " + toSave.getEmployeeId() + " not found"));
-        parkingSpotRepository.find(toSave.getParkingSpotId())
+        ParkingSpot spot = parkingSpotRepository.find(toSave.getParkingSpotId())
                 .orElseThrow(() -> new NotFoundException("ParkingSpot with id = " + toSave.getParkingSpotId() + " not found"));
+
+        if (!spot.getIsAvailable()) {
+            throw new NotFoundException("ParkingSpot with id = " + toSave.getParkingSpotId() + " not found");
+        }
 
         if (!car.getOwnerId().equals(employee.getId())) {
             throw new NotFoundException("Car with id = " + toSave.getCarId() + " not found");
@@ -96,28 +126,21 @@ public class ReservationService {
             throw new EngagedException("One car can occupy only one parking space at a time. Try another time or car");
         }
 
+        reservationsQueue.put(new PBQElement(toSave.getId(), false, toSave.getStartTime(), () -> {
+            parkingSpotRepository.occupySpot(toSave.getParkingSpotId());
+            parkingSpotCache.remove(toSave.getParkingSpotId());
+        }));
+        reservationsQueue.put(new PBQElement(toSave.getId(), true, toSave.getEndTime(), () -> {
+            parkingSpotRepository.freeSpot(toSave.getParkingSpotId());
+            parkingSpotCache.remove(toSave.getParkingSpotId());
+            reservationRepository.delete(toSave.getId());
+            reservationCache.remove(toSave.getId());
+            scheduledTasksCache.remove(toSave.getId());
+        }));
         scheduledTasksCache.put(toSave.getId(), new Pair<>(
-                scheduleTask(() -> {
-                            try {
-                                find(toSave.getId());
-                            } catch (NotFoundException e) {
-                                return;
-                            }
-                            parkingSpotRepository.occupySpot(toSave.getParkingSpotId());
-                            parkingSpotCache.remove(toSave.getParkingSpotId());
-                        },
+                scheduleTask(this::executeOnTop,
                         Date.from(toSave.getStartTime().atZone(dateTimeProvider.getClock().getZone()).toInstant())),
-                scheduleTask(() -> {
-                            try {
-                                find(toSave.getId());
-                            } catch (NotFoundException e) {
-                                return;
-                            }
-                            parkingSpotRepository.freeSpot(toSave.getParkingSpotId());
-                            parkingSpotCache.remove(toSave.getParkingSpotId());
-                            reservationRepository.delete(toSave.getId());
-                            reservationCache.remove(toSave.getId());
-                        },
+                scheduleTask(this::executeOnTop,
                         Date.from(toSave.getEndTime().atZone(dateTimeProvider.getClock().getZone()).toInstant()))
         ));
 
@@ -149,19 +172,16 @@ public class ReservationService {
         }
 
         scheduledTasksCache.get(reservation.getId()).second().cancel(true);
+        reservationsQueue.removeIf(item -> item.getIsEndTime() && item.getId().equals(reservation.getId()));
+        reservationsQueue.put(new PBQElement(reservation.getId(), true, reservation.getEndTime(), () -> {
+            parkingSpotRepository.freeSpot(reservation.getParkingSpotId());
+            parkingSpotCache.remove(reservation.getParkingSpotId());
+            reservationRepository.delete(reservation.getId());
+            reservationCache.remove(reservation.getId());
+        }));
         scheduledTasksCache.put(reservation.getId(), new Pair<>(
                 scheduledTasksCache.get(reservation.getId()).first(),
-                scheduleTask(() -> {
-                            try {
-                                find(reservation.getId());
-                            } catch (NotFoundException e) {
-                                return;
-                            }
-                            parkingSpotRepository.freeSpot(reservation.getParkingSpotId());
-                            parkingSpotCache.remove(reservation.getParkingSpotId());
-                            reservationRepository.delete(reservation.getId());
-                            reservationCache.remove(reservation.getId());
-                        },
+                scheduleTask(this::executeOnTop,
                         Date.from(reservation.getEndTime().atZone(dateTimeProvider.getClock().getZone()).toInstant()))
         ));
 
@@ -177,13 +197,13 @@ public class ReservationService {
         if (scheduled.first().isDone()) {
             scheduled.second().cancel(true);
             parkingSpotRepository.freeSpot(reservation.getParkingSpotId());
-            scheduledTasksCache.remove(id);
         } else {
             scheduled.first().cancel(true);
             scheduled.second().cancel(true);
-            scheduledTasksCache.remove(id);
         }
         parkingSpotCache.remove(reservation.getParkingSpotId());
+        scheduledTasksCache.remove(id);
+        reservationsQueue.removeIf(item -> item.getId().equals(reservation.getId()));
         reservationRepository.delete(id);
         reservationCache.remove(id);
     }
@@ -197,6 +217,7 @@ public class ReservationService {
             pair.first().cancel(true);
             pair.second().cancel(true);
         });
+        reservationsQueue.clear();
         scheduledTasksCache.clear();
         reservationCache.clear();
         parkingSpotCache.clear();
@@ -217,11 +238,5 @@ public class ReservationService {
 
     public Set<Reservation> findAll() {
         return reservationRepository.findAll();
-    }
-
-    @Scheduled(cron = "@daily")
-    public void clearExpiredReservations() {
-        reservationRepository.deleteExpiredReservations(dateTimeProvider.getZonedDateTime().toLocalDateTime());
-        Log.logger.info("Expired reservations cleared");
     }
 }
