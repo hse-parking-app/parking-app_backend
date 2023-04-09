@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Employee;
 import org.hse.parkings.model.building.*;
+import org.hse.parkings.utils.DateTimeProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
+
+import java.time.DayOfWeek;
+import java.time.Duration;
 
 import static org.hse.parkings.utils.Cache.*;
 
@@ -113,17 +117,26 @@ public class AbstractTest {
             .isFree(true)
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
-
+    protected final DateTimeProvider dateTimeProvider = DateTimeProvider.getInstance();
     @Autowired
     protected MockMvc mockMvc;
-
     protected ObjectMapper jackson = new ObjectMapper()
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    protected void adjustClockTo(DayOfWeek day) {
+        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
+        int i = 0;
+        dayOfWeek = dayOfWeek.plus(++i);
+        while (dayOfWeek != day) {
+            i++;
+            dayOfWeek = dayOfWeek.plus(1);
+        }
+        dateTimeProvider.offsetClock(Duration.ofDays(i));
+    }
 
     void insert(Car car) {
         jdbcTemplate.update(

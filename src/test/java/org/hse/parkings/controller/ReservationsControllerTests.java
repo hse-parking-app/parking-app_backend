@@ -8,16 +8,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -31,37 +29,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ReservationsControllerTests extends AbstractTest {
 
     private final String endpoint = "/reservations";
-    private final DateTimeProvider dateTimeProvider = DateTimeProvider.getInstance();
-    @Autowired
-    private ThreadPoolTaskScheduler scheduler;
 
     @AfterEach
     void restoreTime() {
         dateTimeProvider.resetClock();
-
-        scheduler.setClock(dateTimeProvider.getClock());
-        scheduler.initialize();
     }
 
     @Test
     @DisplayName("POST - Reservation")
     public void positive_saveReservation() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(10)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,13 +61,13 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("POST - Reservation with startTime in past")
     public void negative_saveReservationStartTimeInPast() throws Exception {
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().minusSeconds(30))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(10)).build();
+                .startTime(localDateTime.minusSeconds(30))
+                .endTime(localDateTime.plusSeconds(10)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,22 +79,16 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("POST - Reservation on more than 24 hours")
     public void negative_saveReservationOnMoreThan24Hours() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusDays(1).plusHours(1)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusDays(1).plusHours(1)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,22 +101,16 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("POST - Reservation on weekends")
     public void negative_saveReservationOnWeekends() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.SUNDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.SUNDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(12 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(10)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -149,22 +123,16 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("POST - Reservation with day collision")
     public void negative_saveReservationWithDayCollision() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(23 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusHours(2)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusHours(2)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -177,22 +145,16 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("PUT - Extend existing reservation")
     public void positive_extendReservation() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusHours(2)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusHours(2)).build();
 
         MvcResult resultPost = this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -205,11 +167,11 @@ public class ReservationsControllerTests extends AbstractTest {
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
         this.mockMvc.perform(put(endpoint + "/" + id)
-                        .param("endTime", String.valueOf(zonedDateTime.toLocalDateTime().plusHours(3))))
+                        .param("endTime", String.valueOf(localDateTime.plusHours(3))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()))
-                .andExpect(jsonPath("$.endTime").value(zonedDateTime.toLocalDateTime().plusHours(3)
+                .andExpect(jsonPath("$.endTime").value(localDateTime.plusHours(3)
                         .truncatedTo(ChronoUnit.SECONDS).toString()));
         Assertions.assertEquals(scheduledTasksCache.size(), 1);
     }
@@ -217,29 +179,23 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("PUT - Extend existing reservation to overlap other reservation")
     public void negative_extendReservationOverlapOtherReservation() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusHours(2)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusHours(2)).build();
 
         Reservation reservationTwo = Reservation.builder()
                 .carId(carAudiOfBob.getId())
                 .employeeId(employeeBob.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusHours(2))
-                .endTime(zonedDateTime.toLocalDateTime().plusHours(4)).build();
+                .startTime(localDateTime.plusHours(2))
+                .endTime(localDateTime.plusHours(4)).build();
 
         MvcResult resultPost = this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -260,7 +216,7 @@ public class ReservationsControllerTests extends AbstractTest {
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
         this.mockMvc.perform(put(endpoint + "/" + id)
-                        .param("endTime", String.valueOf(zonedDateTime.toLocalDateTime().plusHours(3))))
+                        .param("endTime", String.valueOf(localDateTime.plusHours(3))))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
         Assertions.assertEquals(scheduledTasksCache.size(), 2);
@@ -269,22 +225,16 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("GET - Reservation by id")
     public void positive_getReservationById() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(10)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
 
         MvcResult resultPost = this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -305,28 +255,22 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("GET PUT DELETE - Not existing id Reservation")
     public void negative_getReservationNotExistingId() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(10)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
 
         UUID uuid = UUID.randomUUID();
         this.mockMvc.perform(get(endpoint + "/" + uuid))
                 .andExpect(status().isNotFound());
         this.mockMvc.perform(put(endpoint + "/" + uuid)
-                        .param("endTime", String.valueOf(zonedDateTime.toLocalDateTime().plusHours(3)))
+                        .param("endTime", String.valueOf(localDateTime.plusHours(3)))
                         .content(jackson.writeValueAsString(reservation))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -337,22 +281,16 @@ public class ReservationsControllerTests extends AbstractTest {
     @Test
     @DisplayName("DELETE - Reservation")
     public void positive_getReservationNotExistingId() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(5))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(10)).build();
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
 
         MvcResult resultPost = this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)

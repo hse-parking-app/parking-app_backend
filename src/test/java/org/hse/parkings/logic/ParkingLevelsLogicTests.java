@@ -3,7 +3,6 @@ package org.hse.parkings.logic;
 import com.jayway.jsonpath.JsonPath;
 import org.hse.parkings.AbstractTest;
 import org.hse.parkings.model.Reservation;
-import org.hse.parkings.utils.DateTimeProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -28,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ParkingLevelsLogicTests extends AbstractTest {
 
     private final String endpointParkingLevels = "/parkingLevels";
+
     private final String endpointReservations = "/reservations";
-    private final DateTimeProvider dateTimeProvider = DateTimeProvider.getInstance();
 
     @AfterEach
     void restoreTime() {
@@ -53,13 +52,7 @@ public class ParkingLevelsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Get reservations map of parking spots on level")
     public void positive_getReservationMapOfParkingSpotsOnLevel() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
         LocalDateTime startTime = dateTimeProvider.getZonedDateTime().toLocalDateTime().plusHours(2);
@@ -114,13 +107,7 @@ public class ParkingLevelsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Get reservations map of parking spots on level with possible collision")
     public void positive_getReservationMapOfParkingSpotsOnLevelWithPossibleCollision() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
         LocalDateTime startTime = dateTimeProvider.getZonedDateTime().toLocalDateTime().plusHours(2);

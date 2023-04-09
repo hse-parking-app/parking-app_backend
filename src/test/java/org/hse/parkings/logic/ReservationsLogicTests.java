@@ -17,8 +17,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
@@ -33,9 +32,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ReservationsLogicTests extends AbstractTest {
 
     private final String endpoint = "/reservations";
-    private final DateTimeProvider dateTimeProvider = DateTimeProvider.getInstance();
+
     @Autowired
     private ParkingSpotRepository parkingSpotRepository;
+
     @Autowired
     private ThreadPoolTaskScheduler scheduler;
 
@@ -50,23 +50,17 @@ public class ReservationsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Validation of parking spot occupation")
     public void positive_validateParkingSpotOccupation() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(6)).build();
+                .startTime(localDateTime.plusSeconds(3))
+                .endTime(localDateTime.plusSeconds(6)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,30 +79,24 @@ public class ReservationsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Validation of two parking spot occupation at the same time")
     public void positive_validateTwoParkingSpotOccupationAtTheSameTime() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(6)).build();
+                .startTime(localDateTime.plusSeconds(3))
+                .endTime(localDateTime.plusSeconds(6)).build();
 
         Reservation reservationTwo = Reservation.builder()
                 .carId(carTeslaOfBob.getId())
                 .employeeId(employeeBob.getId())
                 .parkingSpotId(parkingSpotB.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(6)).build();
+                .startTime(localDateTime.plusSeconds(3))
+                .endTime(localDateTime.plusSeconds(6)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -136,30 +124,24 @@ public class ReservationsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Validate sequential occupation and freeing of different spots")
     public void positive_validateSequentialOccupationAndFreeingOfSpots() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(9)).build();
+                .startTime(localDateTime.plusSeconds(3))
+                .endTime(localDateTime.plusSeconds(9)).build();
 
         Reservation reservationTwo = Reservation.builder()
                 .carId(carTeslaOfBob.getId())
                 .employeeId(employeeBob.getId())
                 .parkingSpotId(parkingSpotB.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(6))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(12)).build();
+                .startTime(localDateTime.plusSeconds(6))
+                .endTime(localDateTime.plusSeconds(12)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -191,32 +173,25 @@ public class ReservationsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Validate reservation and another reservation on next time interval")
     public void positive_validationReservationAndAnotherReservationOnNextTimeInterval() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
-        System.out.println(zonedDateTime.toLocalDateTime());
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(6)).build();
+                .startTime(localDateTime.plusSeconds(3))
+                .endTime(localDateTime.plusSeconds(6)).build();
 
         Reservation reservationTwo = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(6))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(9)).build();
+                .startTime(localDateTime.plusSeconds(6))
+                .endTime(localDateTime.plusSeconds(9)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -249,30 +224,24 @@ public class ReservationsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Validate first user reservation and second user reservation on next time interval")
     public void positive_validationFirstUserReservationAndAnotherSecondUserReservationOnNextTimeInterval() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(6)).build();
+                .startTime(localDateTime.plusSeconds(3))
+                .endTime(localDateTime.plusSeconds(6)).build();
 
         Reservation reservationTwo = Reservation.builder()
                 .carId(carTeslaOfBob.getId())
                 .employeeId(employeeBob.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(6))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(9)).build();
+                .startTime(localDateTime.plusSeconds(6))
+                .endTime(localDateTime.plusSeconds(9)).build();
 
         this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -305,23 +274,17 @@ public class ReservationsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Validation of parking spot occupation and freeing when it extended")
     public void positive_validateParkingSpotOccupationAndFreeingWhenExtend() throws Exception {
-        DayOfWeek dayOfWeek = dateTimeProvider.getZonedDateTime().getDayOfWeek();
-        int i = 0;
-        while (dayOfWeek != DayOfWeek.MONDAY) {
-            i++;
-            dayOfWeek = dayOfWeek.plus(1);
-        }
-        dateTimeProvider.offsetClock(Duration.ofDays(i));
+        adjustClockTo(DayOfWeek.MONDAY);
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        ZonedDateTime zonedDateTime = DateTimeProvider.getInstance().getZonedDateTime();
+        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
                 .parkingSpotId(parkingSpotA.getId())
-                .startTime(zonedDateTime.toLocalDateTime().plusSeconds(3))
-                .endTime(zonedDateTime.toLocalDateTime().plusSeconds(6)).build();
+                .startTime(localDateTime.plusSeconds(3))
+                .endTime(localDateTime.plusSeconds(6)).build();
 
         MvcResult resultPost = this.mockMvc.perform(post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -333,11 +296,11 @@ public class ReservationsLogicTests extends AbstractTest {
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
         this.mockMvc.perform(put(endpoint + "/" + id)
-                        .param("endTime", String.valueOf(zonedDateTime.toLocalDateTime().plusSeconds(8))))
+                        .param("endTime", String.valueOf(localDateTime.plusSeconds(8))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()))
-                .andExpect(jsonPath("$.endTime").value(zonedDateTime.toLocalDateTime().plusSeconds(8)
+                .andExpect(jsonPath("$.endTime").value(localDateTime.plusSeconds(8)
                         .truncatedTo(ChronoUnit.SECONDS).toString()));
 
         await().atMost(4, TimeUnit.SECONDS).until(() ->
