@@ -43,6 +43,6 @@ public interface BuildingRepository {
     @Delete("DELETE FROM buildings")
     void deleteAll();
 
-    @Select("SELECT * FROM parking_levels WHERE building_id = #{buildingId}::uuid ORDER BY layer_name")
+    @Select("SELECT * FROM parking_levels WHERE building_id = #{buildingId}::uuid")
     Set<ParkingLevel> findBuildingLevels(UUID buildingId);
 }

@@ -1,12 +1,16 @@
 package org.hse.parkings.service.building;
 
+import org.hse.parkings.dao.ReservationRepository;
 import org.hse.parkings.dao.building.BuildingRepository;
 import org.hse.parkings.dao.building.ParkingLevelRepository;
 import org.hse.parkings.exception.NotFoundException;
+import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.building.ParkingLevel;
 import org.hse.parkings.model.building.ParkingSpot;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,13 +19,18 @@ import static org.hse.parkings.utils.Cache.*;
 @Service
 public class ParkingLevelService {
 
-    private final ParkingLevelRepository parkingLevelRepository;
-
     private final BuildingRepository buildingRepository;
 
-    public ParkingLevelService(ParkingLevelRepository parkingLevelRepository, BuildingRepository buildingRepository) {
+    private final ParkingLevelRepository parkingLevelRepository;
+
+    private final ReservationRepository reservationRepository;
+
+    public ParkingLevelService(ParkingLevelRepository parkingLevelRepository,
+                               BuildingRepository buildingRepository,
+                               ReservationRepository reservationRepository) {
         this.parkingLevelRepository = parkingLevelRepository;
         this.buildingRepository = buildingRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     public ParkingLevel save(ParkingLevel parkingLevel) throws NotFoundException {
@@ -90,5 +99,21 @@ public class ParkingLevelService {
         parkingLevelSpotsCache.put(levelId, parkingLevelSpots);
 
         return parkingLevelSpots;
+    }
+
+    public Set<ParkingSpot> getFreeSpotsOnLevelInInterval(UUID levelId, LocalDateTime startTime, LocalDateTime endTime) {
+        Set<Reservation> reservations = reservationRepository.getReservationsOnParkingLevelInInterval(levelId, startTime, endTime);
+        Set<ParkingSpot> parkingSpots = findParkingSpots(levelId);
+
+        Set<UUID> spotsToOccupy = new HashSet<>();
+        reservations.forEach(reservation -> spotsToOccupy.add(reservation.getParkingSpotId()));
+
+        parkingSpots.forEach(spot -> {
+            if (spotsToOccupy.contains(spot.getId())) {
+                spot.setIsFree(false);
+            }
+        });
+
+        return parkingSpots;
     }
 }

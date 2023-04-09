@@ -71,4 +71,13 @@ public interface ReservationRepository {
             """)
     @ResultMap("reservationResultMap")
     Set<Reservation> getCarTimeCollisions(Reservation reservation);
+
+    @Select("""
+            SELECT r.id, r.car_id, r.employee_id, r.spot_id, r.start_time, r.end_time FROM reservations r
+            INNER JOIN parking_spots ps ON r.spot_id = ps.id
+                WHERE ps.level_id = #{levelId}::uuid AND
+                ((#{startTime} <= start_time AND #{endTime} > start_time) OR (#{startTime} >= start_time AND #{startTime} < end_time))
+            """)
+    @ResultMap("reservationResultMap")
+    Set<Reservation> getReservationsOnParkingLevelInInterval(UUID levelId, LocalDateTime startTime, LocalDateTime endTime);
 }

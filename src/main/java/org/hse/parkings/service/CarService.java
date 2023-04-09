@@ -59,8 +59,7 @@ public class CarService {
         if (carCache.containsKey(id)) {
             return carCache.get(id);
         }
-        Car car = carRepository
-                .find(id)
+        Car car = carRepository.find(id)
                 .orElseThrow(() -> new NotFoundException("Car with id = " + id + " not found"));
         carCache.put(id, car);
         return car;

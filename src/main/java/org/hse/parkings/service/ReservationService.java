@@ -229,8 +229,7 @@ public class ReservationService {
         if (reservationCache.containsKey(id)) {
             return reservationCache.get(id);
         }
-        Reservation reservation = reservationRepository
-                .find(id)
+        Reservation reservation = reservationRepository.find(id)
                 .orElseThrow(() -> new NotFoundException("Reservation with id = " + id + " not found"));
         reservationCache.put(id, reservation);
         return reservation;
