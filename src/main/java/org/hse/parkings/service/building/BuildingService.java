@@ -6,19 +6,18 @@ import org.hse.parkings.model.building.Building;
 import org.hse.parkings.model.building.ParkingLevel;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.hse.parkings.utils.Cache.buildingCache;
+import static org.hse.parkings.utils.Cache.*;
 
 @Service
 public class BuildingService {
 
-    private final BuildingRepository repository;
+    private final BuildingRepository buildingRepository;
 
-    public BuildingService(BuildingRepository repository) {
-        this.repository = repository;
+    public BuildingService(BuildingRepository buildingRepository) {
+        this.buildingRepository = buildingRepository;
     }
 
     public Building save(Building building) {
@@ -26,50 +25,63 @@ public class BuildingService {
                 .name(building.getName())
                 .address(building.getAddress())
                 .numberOfLevels(building.getNumberOfLevels()).build();
-        repository.save(toSave);
+        buildingRepository.save(toSave);
         buildingCache.remove(toSave.getId());
         return findBuilding(toSave.getId());
     }
 
     public Building update(Building building) {
-        repository.update(building);
+        buildingRepository.update(building);
         buildingCache.remove(building.getId());
         return findBuilding(building.getId());
     }
 
     public void delete(UUID id) {
-        repository.delete(id);
+        Set<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(id);
+        buildingLevels.forEach(item -> {
+            parkingLevelCache.remove(item.getId());
+            parkingLevelSpotsCache.remove(item.getId());
+        });
+
+        buildingRepository.delete(id);
         buildingCache.remove(id);
+        buildingLevelsCache.remove(id);
+        parkingSpotCache.clear();
     }
 
     public void deleteAll() {
-        repository.deleteAll();
+        buildingRepository.deleteAll();
         buildingCache.clear();
+        parkingLevelCache.clear();
+        buildingLevelsCache.clear();
+        parkingSpotCache.clear();
+        parkingLevelSpotsCache.clear();
     }
 
     public Building findBuilding(UUID id) throws NotFoundException {
         if (buildingCache.containsKey(id)) {
             return buildingCache.get(id);
         }
-        Building building = repository
-                .find(id)
+        Building building = buildingRepository.find(id)
                 .orElseThrow(() -> new NotFoundException("Building with id = " + id + " not found"));
         buildingCache.put(id, building);
         return building;
     }
 
     public Set<Building> findAll() {
-        return repository.findAll();
+        return buildingRepository.findAll();
     }
 
-    public List<ParkingLevel> findBuildingLevels(UUID buildingId) throws NotFoundException {
-        if (buildingCache.containsKey(buildingId)) {
-            return repository.findBuildingLevels(buildingId);
+    public Set<ParkingLevel> findBuildingLevels(UUID buildingId) throws NotFoundException {
+        if (buildingLevelsCache.containsKey(buildingId)) {
+            return buildingLevelsCache.get(buildingId);
         }
-        Building building = repository
-                .find(buildingId)
+        Building building = buildingRepository.find(buildingId)
                 .orElseThrow(() -> new NotFoundException("Building with id = " + buildingId + " not found"));
         buildingCache.put(buildingId, building);
-        return repository.findBuildingLevels(buildingId);
+        Set<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(buildingId);
+        buildingLevelsCache.put(buildingId, buildingLevels);
+
+        return buildingLevels;
     }
 }

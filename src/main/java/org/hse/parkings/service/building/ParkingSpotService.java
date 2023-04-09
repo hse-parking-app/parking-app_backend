@@ -10,12 +10,13 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.hse.parkings.utils.Cache.parkingLevelSpotsCache;
 import static org.hse.parkings.utils.Cache.parkingSpotCache;
 
 @Service
 public class ParkingSpotService {
 
-    private final ParkingSpotRepository repository;
+    private final ParkingSpotRepository parkingSpotRepository;
 
     private final ParkingLevelRepository parkingLevelRepository;
 
@@ -24,7 +25,7 @@ public class ParkingSpotService {
     public ParkingSpotService(ParkingSpotRepository parkingSpotRepository,
                               ParkingLevelRepository parkingLevelRepository,
                               BuildingRepository buildingRepository) {
-        this.repository = parkingSpotRepository;
+        this.parkingSpotRepository = parkingSpotRepository;
         this.parkingLevelRepository = parkingLevelRepository;
         this.buildingRepository = buildingRepository;
     }
@@ -42,8 +43,9 @@ public class ParkingSpotService {
                 .orElseThrow(() -> new NotFoundException("ParkingLevel with id = " + toSave.getLevelId() + " not found"));
         buildingRepository.find(toSave.getBuildingId())
                 .orElseThrow(() -> new NotFoundException("Building with id = " + toSave.getBuildingId() + " not found"));
-        repository.save(toSave);
+        parkingSpotRepository.save(toSave);
         parkingSpotCache.remove(toSave.getId());
+        parkingLevelSpotsCache.remove(toSave.getLevelId());
         return findParkingSpot(toSave.getId());
     }
 
@@ -52,33 +54,38 @@ public class ParkingSpotService {
                 .orElseThrow(() -> new NotFoundException("ParkingLevel with id = " + parkingSpot.getLevelId() + " not found"));
         buildingRepository.find(parkingSpot.getBuildingId())
                 .orElseThrow(() -> new NotFoundException("Building with id = " + parkingSpot.getBuildingId() + " not found"));
-        repository.update(parkingSpot);
+        parkingSpotRepository.update(parkingSpot);
         parkingSpotCache.remove(parkingSpot.getId());
+        parkingLevelSpotsCache.remove(parkingSpot.getLevelId());
         return findParkingSpot(parkingSpot.getId());
     }
 
-    public void delete(UUID id) {
-        repository.delete(id);
+    public void delete(UUID id) throws NotFoundException {
+        ParkingSpot parkingSpot = parkingSpotRepository.find(id)
+                .orElseThrow(() -> new NotFoundException("ParkingSpot with id = " + id + " not found"));
+
+        parkingSpotRepository.delete(id);
         parkingSpotCache.remove(id);
+        parkingLevelSpotsCache.remove(parkingSpot.getLevelId());
     }
 
     public void deleteAll() {
-        repository.deleteAll();
+        parkingSpotRepository.deleteAll();
         parkingSpotCache.clear();
+        parkingLevelSpotsCache.clear();
     }
 
     public ParkingSpot findParkingSpot(UUID id) throws NotFoundException {
         if (parkingSpotCache.containsKey(id)) {
             return parkingSpotCache.get(id);
         }
-        ParkingSpot parkingSpot = repository
-                .find(id)
+        ParkingSpot parkingSpot = parkingSpotRepository.find(id)
                 .orElseThrow(() -> new NotFoundException("ParkingSpot with id = " + id + " not found"));
         parkingSpotCache.put(id, parkingSpot);
         return parkingSpot;
     }
 
     public Set<ParkingSpot> findAll() {
-        return repository.findAll();
+        return parkingSpotRepository.findAll();
     }
 }

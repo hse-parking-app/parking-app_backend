@@ -7,7 +7,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -62,7 +61,7 @@ public class BuildingController {
 
     @GetMapping("/{buildingId}/levels")
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    List<ParkingLevel> findBuildingLevels(@PathVariable UUID buildingId) {
+    Set<ParkingLevel> findBuildingLevels(@PathVariable UUID buildingId) {
         return service.findBuildingLevels(buildingId);
     }
 }
