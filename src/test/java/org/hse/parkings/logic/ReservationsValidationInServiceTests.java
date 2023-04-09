@@ -11,10 +11,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -35,15 +33,10 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
 
     private final String endpoint = "/reservations";
     private final DateTimeProvider dateTimeProvider = DateTimeProvider.getInstance();
-    @Autowired
-    private ThreadPoolTaskScheduler scheduler;
 
     @AfterEach
     void restoreTime() {
         dateTimeProvider.resetClock();
-
-        scheduler.setClock(dateTimeProvider.getClock());
-        scheduler.initialize();
     }
 
     @Test

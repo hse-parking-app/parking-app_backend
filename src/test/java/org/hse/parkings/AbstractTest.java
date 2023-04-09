@@ -92,6 +92,27 @@ public class AbstractTest {
             .isFree(true)
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
+    protected final ParkingLevel parkingLevelTwo = ParkingLevel.builder()
+            .buildingId(building.getId())
+            .layerName("Level 2")
+            .numberOfSpots(3)
+            .canvas(new CanvasSize(1, 1)).build();
+    protected final ParkingSpot parkingSpotD = ParkingSpot.builder()
+            .levelId(parkingLevelTwo.getId())
+            .buildingId(building.getId())
+            .parkingNumber("D")
+            .isAvailable(true)
+            .isFree(true)
+            .canvas(new CanvasSize(1, 1))
+            .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
+    protected final ParkingSpot parkingSpotE = ParkingSpot.builder()
+            .levelId(parkingLevelTwo.getId())
+            .buildingId(building.getId())
+            .parkingNumber("E")
+            .isAvailable(true)
+            .isFree(true)
+            .canvas(new CanvasSize(1, 1))
+            .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
 
     @Autowired
     protected MockMvc mockMvc;
@@ -222,9 +243,12 @@ public class AbstractTest {
 
         insert(building);
         insert(parkingLevelOne);
+        insert(parkingLevelTwo);
         insert(parkingSpotA);
         insert(parkingSpotB);
         insert(parkingSpotC);
+        insert(parkingSpotD);
+        insert(parkingSpotE);
     }
 
     @AfterEach
