@@ -1,6 +1,7 @@
 package org.hse.parkings.controller;
 
 import org.hse.parkings.model.Reservation;
+import org.hse.parkings.model.ReservationResponse;
 import org.hse.parkings.service.ReservationService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.annotation.Secured;
@@ -42,6 +43,12 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    ReservationResponse getReservationDetails(@PathVariable UUID id) {
+        return service.getReservationDetails(id);
+    }
+
+    @GetMapping("/{id}/raw")
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
     Reservation get(@PathVariable UUID id) {
         return service.find(id);

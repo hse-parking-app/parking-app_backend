@@ -9,6 +9,7 @@ import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Employee;
 import org.hse.parkings.model.Reservation;
+import org.hse.parkings.model.ReservationResponse;
 import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.hse.parkings.utils.Log;
@@ -223,6 +224,33 @@ public class ReservationService {
         parkingSpotCache.clear();
 
         Log.logger.info("Reservations cleared, spots freed");
+    }
+
+    public ReservationResponse getReservationDetails(UUID id) throws NotFoundException {
+        Reservation reservation;
+
+        if (reservationCache.containsKey(id)) {
+            reservation = reservationCache.get(id);
+        } else {
+            reservation = reservationRepository.find(id)
+                    .orElseThrow(() -> new NotFoundException("Reservation with id = " + id + " not found"));
+            reservationCache.put(id, reservation);
+        }
+
+        Car car = carRepository.find(reservation.getCarId())
+                .orElseThrow(() -> new NotFoundException("Car with id = " + reservation.getCarId() + " not found"));
+        Employee employee = employeeRepository.findById(reservation.getEmployeeId())
+                .orElseThrow(() -> new NotFoundException("Employee with id = " + reservation.getCarId() + " not found"));
+        ParkingSpot parkingSpot = parkingSpotRepository.find(reservation.getParkingSpotId())
+                .orElseThrow(() -> new NotFoundException("ParkingSpot with id = " + reservation.getCarId() + " not found"));
+
+        return ReservationResponse.builder()
+                .carModel(car.getModel())
+                .carRegistryNumber(car.getRegistryNumber())
+                .employeeName(employee.getName())
+                .parkingSpotNumber(parkingSpot.getParkingNumber())
+                .startTime(reservation.getStartTime())
+                .endTime(reservation.getEndTime()).build();
     }
 
     public Reservation find(UUID id) throws NotFoundException {
