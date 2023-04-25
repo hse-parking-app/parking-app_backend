@@ -1,8 +1,8 @@
 package org.hse.parkings.handler.exception;
 
 import org.hse.parkings.exception.AlreadyExistsException;
-import org.hse.parkings.exception.ErrorMessage;
-import org.hse.parkings.exception.ParamMessage;
+import org.hse.parkings.model.error.CauseMessage;
+import org.hse.parkings.model.error.Error;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,12 +17,12 @@ public class AlreadyExistsExceptionHandler {
 
     @ExceptionHandler(AlreadyExistsException.class)
     @ResponseStatus(value = HttpStatus.CONFLICT)
-    protected ErrorMessage handleAlreadyExists(AlreadyExistsException ex, WebRequest request) {
-        return new ErrorMessage(
+    protected Error handleAlreadyExists(AlreadyExistsException ex, WebRequest request) {
+        return new Error(
                 HttpStatus.CONFLICT,
                 HttpStatus.CONFLICT.value(),
                 DateTimeProvider.getInstance().getZonedDateTime(),
-                Collections.singletonList(new ParamMessage("error", ex.getMessage())),
+                Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );
     }

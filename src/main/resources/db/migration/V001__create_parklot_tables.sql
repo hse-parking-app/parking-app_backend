@@ -6,6 +6,20 @@ CREATE TABLE employees
     password VARCHAR        NOT NULL
 );
 
+CREATE TABLE employee_roles
+(
+    employee_id UUID    NOT NULL,
+    FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE,
+    role        VARCHAR NOT NULL
+);
+
+CREATE TABLE employee_tokens
+(
+    email         VARCHAR UNIQUE NOT NULL,
+    FOREIGN KEY (email) REFERENCES employees (email) ON DELETE CASCADE,
+    refresh_token VARCHAR        NOT NULL
+);
+
 CREATE TABLE cars
 (
     id              UUID PRIMARY KEY,

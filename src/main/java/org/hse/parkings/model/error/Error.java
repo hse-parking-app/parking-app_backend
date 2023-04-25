@@ -1,4 +1,4 @@
-package org.hse.parkings.exception;
+package org.hse.parkings.model.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,11 +9,11 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ErrorMessage {
+public class Error {
 
     private HttpStatus error;
     private int code;
     private ZonedDateTime timestamp;
-    private List<ParamMessage> messages;
+    private List<CauseMessage> messages;
     private String path;
 }

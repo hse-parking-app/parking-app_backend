@@ -26,10 +26,12 @@ spring:
   jackson:
     time-zone: Europe/Moscow
 
+jwt:
+  secret:
+    access: CfDFNdA+QnpPRc+PQ0zadpyKfdHVzbbnLTtTblvR2Zn8avMFTrSgCSnrF5/T16jI4FsUsTkvMrB31Lj0ol0I+w==
+    refresh: GkExH3TBFqh4p/qTSgs2dNlZXGkPuIfkVymRuBJcGxA36cesFlb5vjQJh/JGyLylfqdCzovO7gelnN2mtYpaiA==
+
 auth:
-  user:
-    login: user
-    password: user
   admin:
     login: admin
     password: admin

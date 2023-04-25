@@ -1,5 +1,6 @@
 package org.hse.parkings.service;
 
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.CarRepository;
 import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.exception.NotFoundException;
@@ -12,16 +13,12 @@ import java.util.UUID;
 import static org.hse.parkings.utils.Cache.carCache;
 
 @Service
+@RequiredArgsConstructor
 public class CarService {
 
     private final CarRepository carRepository;
 
     private final EmployeeRepository employeeRepository;
-
-    public CarService(CarRepository carRepository, EmployeeRepository employeeRepository) {
-        this.carRepository = carRepository;
-        this.employeeRepository = employeeRepository;
-    }
 
     public Car save(Car car) throws NotFoundException {
         Car toSave = Car.builder()
@@ -67,5 +64,9 @@ public class CarService {
 
     public Set<Car> findAll() {
         return carRepository.findAll();
+    }
+
+    public Set<Car> findEmployeesCars(UUID employeeId) {
+        return carRepository.findEmployeesCars(employeeId);
     }
 }

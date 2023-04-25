@@ -21,6 +21,9 @@ public interface CarRepository {
     })
     Optional<Car> find(UUID id);
 
+    @Select("SELECT * FROM cars WHERE owner_id = #{employeeId}::uuid")
+    Set<Car> findEmployeesCars(UUID employeeId);
+
     @Select("SELECT * FROM cars")
     @ResultMap("carResultMap")
     Set<Car> findAll();

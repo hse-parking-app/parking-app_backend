@@ -1,12 +1,12 @@
-package org.hse.parkings.exception;
+package org.hse.parkings.model.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ParamMessage {
+public class CauseMessage {
 
-    private String param;
+    private String cause;
     private String message;
 }

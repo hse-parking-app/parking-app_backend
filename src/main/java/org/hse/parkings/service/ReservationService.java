@@ -1,5 +1,6 @@
 package org.hse.parkings.service;
 
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.CarRepository;
 import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.dao.ReservationRepository;
@@ -7,10 +8,9 @@ import org.hse.parkings.dao.building.ParkingSpotRepository;
 import org.hse.parkings.exception.EngagedException;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Car;
-import org.hse.parkings.model.Employee;
 import org.hse.parkings.model.Reservation;
-import org.hse.parkings.model.ReservationResponse;
 import org.hse.parkings.model.building.ParkingSpot;
+import org.hse.parkings.model.employee.Employee;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.hse.parkings.utils.Log;
 import org.hse.parkings.utils.PBQElement;
@@ -34,6 +34,7 @@ import java.util.concurrent.ScheduledFuture;
 import static org.hse.parkings.utils.Cache.*;
 
 @Service
+@RequiredArgsConstructor
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -66,22 +67,6 @@ public class ReservationService {
                 }
                 return timeComp;
             });
-
-    public ReservationService(ReservationRepository reservationRepository,
-                              CarRepository carRepository,
-                              EmployeeRepository employeeRepository,
-                              ParkingSpotRepository parkingSpotRepository,
-                              TaskScheduler taskScheduler,
-                              DateTimeProvider dateTimeProvider,
-                              Validator validator) {
-        this.reservationRepository = reservationRepository;
-        this.carRepository = carRepository;
-        this.employeeRepository = employeeRepository;
-        this.parkingSpotRepository = parkingSpotRepository;
-        this.taskScheduler = taskScheduler;
-        this.dateTimeProvider = dateTimeProvider;
-        this.validator = validator;
-    }
 
     private ScheduledFuture<?> scheduleTask(Runnable task, Date time) {
         return taskScheduler.schedule(task, time);
@@ -226,33 +211,6 @@ public class ReservationService {
         Log.logger.info("Reservations cleared, spots freed");
     }
 
-    public ReservationResponse getReservationDetails(UUID id) throws NotFoundException {
-        Reservation reservation;
-
-        if (reservationCache.containsKey(id)) {
-            reservation = reservationCache.get(id);
-        } else {
-            reservation = reservationRepository.find(id)
-                    .orElseThrow(() -> new NotFoundException("Reservation with id = " + id + " not found"));
-            reservationCache.put(id, reservation);
-        }
-
-        Car car = carRepository.find(reservation.getCarId())
-                .orElseThrow(() -> new NotFoundException("Car with id = " + reservation.getCarId() + " not found"));
-        Employee employee = employeeRepository.findById(reservation.getEmployeeId())
-                .orElseThrow(() -> new NotFoundException("Employee with id = " + reservation.getCarId() + " not found"));
-        ParkingSpot parkingSpot = parkingSpotRepository.find(reservation.getParkingSpotId())
-                .orElseThrow(() -> new NotFoundException("ParkingSpot with id = " + reservation.getCarId() + " not found"));
-
-        return ReservationResponse.builder()
-                .carModel(car.getModel())
-                .carRegistryNumber(car.getRegistryNumber())
-                .employeeName(employee.getName())
-                .parkingSpotNumber(parkingSpot.getParkingNumber())
-                .startTime(reservation.getStartTime())
-                .endTime(reservation.getEndTime()).build();
-    }
-
     public Reservation find(UUID id) throws NotFoundException {
         if (reservationCache.containsKey(id)) {
             return reservationCache.get(id);
@@ -261,6 +219,10 @@ public class ReservationService {
                 .orElseThrow(() -> new NotFoundException("Reservation with id = " + id + " not found"));
         reservationCache.put(id, reservation);
         return reservation;
+    }
+
+    public Set<Reservation> findEmployeeReservations(UUID employeeId) {
+        return reservationRepository.findEmployeeReservations(employeeId);
     }
 
     public Set<Reservation> findAll() {

@@ -25,6 +25,9 @@ public interface ReservationRepository {
     })
     Optional<Reservation> find(UUID id);
 
+    @Select("SELECT * FROM reservations WHERE employee_id = #{employeeId}::uuid")
+    Set<Reservation> findEmployeeReservations(UUID employeeId);
+
     @Select("SELECT * FROM reservations")
     @ResultMap("reservationResultMap")
     Set<Reservation> findAll();

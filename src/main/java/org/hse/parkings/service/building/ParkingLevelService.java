@@ -1,5 +1,6 @@
 package org.hse.parkings.service.building;
 
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.ReservationRepository;
 import org.hse.parkings.dao.building.BuildingRepository;
 import org.hse.parkings.dao.building.ParkingLevelRepository;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import static org.hse.parkings.utils.Cache.*;
 
 @Service
+@RequiredArgsConstructor
 public class ParkingLevelService {
 
     private final BuildingRepository buildingRepository;
@@ -24,14 +26,6 @@ public class ParkingLevelService {
     private final ParkingLevelRepository parkingLevelRepository;
 
     private final ReservationRepository reservationRepository;
-
-    public ParkingLevelService(ParkingLevelRepository parkingLevelRepository,
-                               BuildingRepository buildingRepository,
-                               ReservationRepository reservationRepository) {
-        this.parkingLevelRepository = parkingLevelRepository;
-        this.buildingRepository = buildingRepository;
-        this.reservationRepository = reservationRepository;
-    }
 
     public ParkingLevel save(ParkingLevel parkingLevel) throws NotFoundException {
         ParkingLevel toSave = ParkingLevel.builder()

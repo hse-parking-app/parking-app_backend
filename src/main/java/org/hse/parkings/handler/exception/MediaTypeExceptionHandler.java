@@ -1,7 +1,7 @@
 package org.hse.parkings.handler.exception;
 
-import org.hse.parkings.exception.ErrorMessage;
-import org.hse.parkings.exception.ParamMessage;
+import org.hse.parkings.model.error.CauseMessage;
+import org.hse.parkings.model.error.Error;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -17,12 +17,12 @@ public class MediaTypeExceptionHandler {
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     @ResponseStatus(value = HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-    protected ErrorMessage handleMediaTypeException(HttpMediaTypeNotSupportedException ex, WebRequest request) {
-        return new ErrorMessage(
+    protected Error handleMediaTypeException(HttpMediaTypeNotSupportedException ex, WebRequest request) {
+        return new Error(
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
                 DateTimeProvider.getInstance().getZonedDateTime(),
-                Collections.singletonList(new ParamMessage("error", ex.getMessage())),
+                Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );
     }

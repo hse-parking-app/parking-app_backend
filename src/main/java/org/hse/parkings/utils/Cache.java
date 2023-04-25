@@ -1,11 +1,11 @@
 package org.hse.parkings.utils;
 
 import org.hse.parkings.model.Car;
-import org.hse.parkings.model.Employee;
 import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.building.Building;
 import org.hse.parkings.model.building.ParkingLevel;
 import org.hse.parkings.model.building.ParkingSpot;
+import org.hse.parkings.model.employee.Employee;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.Set;

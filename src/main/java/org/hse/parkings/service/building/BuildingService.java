@@ -1,5 +1,6 @@
 package org.hse.parkings.service.building;
 
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.building.BuildingRepository;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.building.Building;
@@ -12,13 +13,10 @@ import java.util.UUID;
 import static org.hse.parkings.utils.Cache.*;
 
 @Service
+@RequiredArgsConstructor
 public class BuildingService {
 
     private final BuildingRepository buildingRepository;
-
-    public BuildingService(BuildingRepository buildingRepository) {
-        this.buildingRepository = buildingRepository;
-    }
 
     public Building save(Building building) {
         Building toSave = Building.builder()
