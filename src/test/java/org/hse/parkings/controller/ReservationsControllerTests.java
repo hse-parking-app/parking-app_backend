@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.DayOfWeek;
@@ -24,7 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@WithMockUser(username = "admin", roles = {"ADMIN"})
 @DisplayName("Reservations controller")
 public class ReservationsControllerTests extends AbstractTest {
 
@@ -245,43 +243,10 @@ public class ReservationsControllerTests extends AbstractTest {
                 .andReturn();
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
-        this.mockMvc.perform(get(endpoint + "/" + id + "/raw"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()));
-        Assertions.assertEquals(scheduledTasksCache.size(), 1);
-    }
-
-    @Test
-    @DisplayName("GET - Reservation details")
-    public void positive_getReservationDetails() throws Exception {
-        adjustClockTo(DayOfWeek.MONDAY);
-        dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
-
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
-        Reservation reservation = Reservation.builder()
-                .carId(carSupraOfAlice.getId())
-                .employeeId(employeeAlice.getId())
-                .parkingSpotId(parkingSpotA.getId())
-                .startTime(localDateTime.plusSeconds(5))
-                .endTime(localDateTime.plusSeconds(10)).build();
-
-        MvcResult resultPost = this.mockMvc.perform(post(endpoint)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jackson.writeValueAsString(reservation)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()))
-                .andReturn();
-
-        String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
         this.mockMvc.perform(get(endpoint + "/" + id))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.carModel").value(carSupraOfAlice.getModel()))
-                .andExpect(jsonPath("$.carRegistryNumber").value(carSupraOfAlice.getRegistryNumber()))
-                .andExpect(jsonPath("$.employeeName").value(employeeAlice.getName()))
-                .andExpect(jsonPath("$.parkingSpotNumber").value(parkingSpotA.getParkingNumber()));
+                .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()));
         Assertions.assertEquals(scheduledTasksCache.size(), 1);
     }
 

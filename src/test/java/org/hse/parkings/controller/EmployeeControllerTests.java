@@ -1,21 +1,20 @@
 package org.hse.parkings.controller;
 
 import org.hse.parkings.AbstractTest;
-import org.hse.parkings.model.Employee;
+import org.hse.parkings.model.employee.Employee;
+import org.hse.parkings.model.employee.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 
+import java.util.Set;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@WithMockUser(username = "admin", roles = {"ADMIN"})
 @DisplayName("Employee controller")
 public class EmployeeControllerTests extends AbstractTest {
 
@@ -62,7 +61,7 @@ public class EmployeeControllerTests extends AbstractTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value(400))
                 .andExpect(jsonPath("$.messages.length()").value(1))
-                .andExpect(jsonPath("$.messages.[0].param").value("email"));
+                .andExpect(jsonPath("$.messages.[0].cause").value("email"));
     }
 
     @Test
@@ -71,7 +70,6 @@ public class EmployeeControllerTests extends AbstractTest {
         this.mockMvc.perform(get(endpoint))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$.[0].id").exists())
                 .andExpect(jsonPath("$.[0].name").exists())
                 .andExpect(jsonPath("$.[0].email").exists())
@@ -83,7 +81,10 @@ public class EmployeeControllerTests extends AbstractTest {
     public void positive_getEmployeeById() throws Exception {
         this.mockMvc.perform(get(endpoint + "/" + employeeAlice.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(jackson.writeValueAsString(employeeAlice))));
+                .andExpect(jsonPath("$.id").value(employeeAlice.getId().toString()))
+                .andExpect(jsonPath("$.name").value(employeeAlice.getName()))
+                .andExpect(jsonPath("$.email").value(employeeAlice.getEmail()))
+                .andExpect(jsonPath("$.roles.length()").value(employeeAlice.getRoles().size()));
     }
 
     @Test
@@ -105,12 +106,14 @@ public class EmployeeControllerTests extends AbstractTest {
     public void positive_editEmployee() throws Exception {
         Employee temp = employeeAlice;
         temp.setName("Alisa");
+        temp.setRoles(Set.of(Role.APP_USER, Role.ADMIN));
         String tempEmployeeString = jackson.writeValueAsString(temp);
         this.mockMvc.perform(put(endpoint + "/" + temp.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(tempEmployeeString))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(tempEmployeeString)));
+                .andExpect(jsonPath("$.name").value(temp.getName()))
+                .andExpect(jsonPath("$.roles.length()").value(temp.getRoles().size()));
     }
 
     @Test

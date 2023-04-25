@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.UUID;
 
@@ -15,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@WithMockUser(username = "admin", roles = {"ADMIN"})
 @DisplayName("Car controller")
 public class CarControllerTests extends AbstractTest {
 
@@ -35,6 +33,20 @@ public class CarControllerTests extends AbstractTest {
     }
 
     @Test
+    @DisplayName("POST - AppUser Car")
+    public void positive_postAppUserCar() throws Exception {
+        Car temp = carSupraOfAlice;
+        temp.setOwnerId(null);
+        this.mockMvc.perform(post(endpoint + "/employee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(temp)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.model").value(temp.getModel()))
+                .andExpect(jsonPath("$.ownerId").value(employeeAlice.getId().toString()));
+    }
+
+    @Test
     @DisplayName("POST - Car with null length & weight")
     public void positive_saveNullLengthWeightCar() throws Exception {
         Car temp = carSupraOfAlice;
@@ -48,6 +60,20 @@ public class CarControllerTests extends AbstractTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.length").doesNotExist())
                 .andExpect(jsonPath("$.weight").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("POST - Car without ownerId")
+    public void negative_saveCarWithoutOwner() throws Exception {
+        Car temp = carSupraOfAlice;
+        temp.setOwnerId(null);
+
+        this.mockMvc.perform(post(endpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(temp)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(400));
     }
 
     @Test

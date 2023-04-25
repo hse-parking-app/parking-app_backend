@@ -4,17 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jayway.jsonpath.JsonPath;
+import org.hse.parkings.filter.JwtHeaderFilter;
 import org.hse.parkings.model.Car;
-import org.hse.parkings.model.Employee;
 import org.hse.parkings.model.building.*;
+import org.hse.parkings.model.employee.Employee;
+import org.hse.parkings.model.employee.Role;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -22,8 +28,13 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
+import java.util.Collections;
 
 import static org.hse.parkings.utils.Cache.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,12 +42,14 @@ public class AbstractTest {
 
     protected final Employee employeeAlice = Employee.builder()
             .name("Alice")
-            .email("a@a.a")
-            .password("123").build();
+            .email("aliceeee@o.o")
+            .password("123")
+            .roles(Collections.singleton(Role.ADMIN)).build();
     protected final Employee employeeBob = Employee.builder()
             .name("Bob")
             .email("goodbob@123.wow")
-            .password("123").build();
+            .password("123")
+            .roles(Collections.singleton(Role.ADMIN)).build();
 
     protected final Car carSupraOfAlice = Car.builder()
             .ownerId(employeeAlice.getId())
@@ -117,13 +130,22 @@ public class AbstractTest {
             .isFree(true)
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
+
     protected final DateTimeProvider dateTimeProvider = DateTimeProvider.getInstance();
+
+    protected String adminToken = null;
+
     @Autowired
     protected MockMvc mockMvc;
+
+    @Autowired
+    protected PasswordEncoder encoder;
+
     protected ObjectMapper jackson = new ObjectMapper()
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -162,8 +184,18 @@ public class AbstractTest {
                     ps.setObject(1, employee.getId());
                     ps.setString(2, employee.getName());
                     ps.setString(3, employee.getEmail());
-                    ps.setString(4, employee.getPassword());
+                    ps.setString(4, encoder.encode(employee.getPassword()));
                 });
+        for (Role role : employee.getRoles()) {
+            jdbcTemplate.update(
+                    """
+                            INSERT INTO employee_roles (employee_id, role)
+                            VALUES (?, ?)
+                            """, ps -> {
+                        ps.setObject(1, employee.getId());
+                        ps.setString(2, role.name());
+                    });
+        }
     }
 
     void insert(Building building) {
@@ -241,13 +273,24 @@ public class AbstractTest {
     }
 
     @BeforeEach
-    void setUpEach(WebApplicationContext webApplicationContext) {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .alwaysDo(MockMvcResultHandlers.print())
-                .addFilter(new CharacterEncodingFilter("UTF-8", false)).build();
-
+    void setUpEach(WebApplicationContext webApplicationContext) throws Exception {
         insert(employeeAlice);
         insert(employeeBob);
+
+        MvcResult resultPost = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(employeeAlice)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        adminToken = "Bearer " + JsonPath.read(resultPost.getResponse().getContentAsString(), "$.accessToken");
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .alwaysDo(MockMvcResultHandlers.print())
+                .addFilter(new CharacterEncodingFilter("UTF-8", false))
+                .addFilter(new JwtHeaderFilter(adminToken))
+                .apply(springSecurity()).build();
 
         insert(carSupraOfAlice);
         insert(carSkylineOfAlice);
