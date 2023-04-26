@@ -7,7 +7,9 @@ import org.hse.parkings.model.jwt.JwtRequest;
 import org.hse.parkings.model.jwt.JwtResponse;
 import org.hse.parkings.model.jwt.RefreshJwtRequest;
 import org.hse.parkings.service.AuthService;
+import org.hse.parkings.validate.groups.AppUserEmployee;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/signUp")
-    public JwtResponse signUp(@Valid @RequestBody Employee employee) {
+    public JwtResponse signUp(@Validated({AppUserEmployee.class}) @RequestBody Employee employee) {
         return authService.signUp(employee);
     }
 

@@ -20,17 +20,17 @@ public class Car {
     @NotNull(message = "Car must be connected to owner employee via UUID", groups = {DefaultCar.class})
     UUID ownerId;
 
-    @NotNull(message = "Car model is required parameter", groups = {DefaultCar.class, AppUserCar.class})
-    @NotBlank(message = "Model cannot be blank", groups = {DefaultCar.class, AppUserCar.class})
+    @NotNull(message = "Car model is required parameter", groups = {AppUserCar.class, DefaultCar.class})
+    @NotBlank(message = "Model cannot be blank", groups = {AppUserCar.class, DefaultCar.class})
     String model;
 
-    @Positive(message = "Length must be a positive number", groups = {DefaultCar.class, AppUserCar.class})
+    @Positive(message = "Length must be a positive number", groups = {AppUserCar.class, DefaultCar.class})
     Double lengthMeters;
 
-    @Positive(message = "Weight must be a positive number", groups = {DefaultCar.class, AppUserCar.class})
+    @Positive(message = "Weight must be a positive number", groups = {AppUserCar.class, DefaultCar.class})
     Double weightTons;
 
-    @NotNull(message = "Car registry number is required parameter", groups = {DefaultCar.class, AppUserCar.class})
-    @NotBlank(message = "Registry number cannot be blank", groups = {DefaultCar.class, AppUserCar.class})
+    @NotNull(message = "Car registry number is required parameter", groups = {AppUserCar.class, DefaultCar.class})
+    @NotBlank(message = "Registry number cannot be blank", groups = {AppUserCar.class, DefaultCar.class})
     String registryNumber;
 }
