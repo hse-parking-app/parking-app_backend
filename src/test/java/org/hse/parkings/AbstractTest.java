@@ -1,9 +1,6 @@
 package org.hse.parkings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jayway.jsonpath.JsonPath;
 import org.hse.parkings.filter.JwtHeaderFilter;
 import org.hse.parkings.model.Car;
@@ -131,9 +128,10 @@ public class AbstractTest {
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
 
-    protected final DateTimeProvider dateTimeProvider = DateTimeProvider.getInstance();
-
     protected String adminToken = null;
+
+    @Autowired
+    protected DateTimeProvider dateTimeProvider;
 
     @Autowired
     protected MockMvc mockMvc;
@@ -141,10 +139,8 @@ public class AbstractTest {
     @Autowired
     protected PasswordEncoder encoder;
 
-    protected ObjectMapper jackson = new ObjectMapper()
-            .registerModule(new Jdk8Module())
-            .registerModule(new JavaTimeModule())
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    @Autowired
+    protected ObjectMapper jackson;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
