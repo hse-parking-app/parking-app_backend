@@ -20,7 +20,7 @@ public class ParkingSpotController {
     private final ParkingSpotService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
     Set<ParkingSpot> getAll() {
         return service.findAll();
     }
