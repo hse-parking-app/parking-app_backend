@@ -46,7 +46,7 @@ CREATE TABLE parking_levels
     id              UUID PRIMARY KEY,
     building_id     UUID         NOT NULL,
     FOREIGN KEY (building_id) REFERENCES buildings (id) ON DELETE CASCADE,
-    layer_name      VARCHAR      NOT NULL,
+    level_number    INTEGER      NOT NULL,
     number_of_spots INTEGER      NOT NULL,
     canvas          integer_pair NOT NULL
 );

@@ -7,6 +7,7 @@ import org.hse.parkings.model.building.Building;
 import org.hse.parkings.model.building.ParkingLevel;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,7 +36,7 @@ public class BuildingService {
     }
 
     public void delete(UUID id) {
-        Set<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(id);
+        List<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(id);
         buildingLevels.forEach(item -> {
             parkingLevelCache.remove(item.getId());
             parkingLevelSpotsCache.remove(item.getId());
@@ -70,14 +71,14 @@ public class BuildingService {
         return buildingRepository.findAll();
     }
 
-    public Set<ParkingLevel> findBuildingLevels(UUID buildingId) throws NotFoundException {
+    public List<ParkingLevel> findBuildingLevels(UUID buildingId) throws NotFoundException {
         if (buildingLevelsCache.containsKey(buildingId)) {
             return buildingLevelsCache.get(buildingId);
         }
         Building building = buildingRepository.find(buildingId)
                 .orElseThrow(() -> new NotFoundException("Building with id = " + buildingId + " not found"));
         buildingCache.put(buildingId, building);
-        Set<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(buildingId);
+        List<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(buildingId);
         buildingLevelsCache.put(buildingId, buildingLevels);
 
         return buildingLevels;

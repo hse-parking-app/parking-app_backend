@@ -68,4 +68,16 @@ public class EmployeeService {
     public Set<Employee> findAll() {
         return repository.findAll();
     }
+
+    public String findRefreshToken(String email) {
+        return repository.getRefreshToken(email);
+    }
+
+    public void saveRefreshToken(String email, String refreshToken) {
+        repository.putRefreshToken(email, refreshToken);
+    }
+
+    public void deleteAllRefreshKeys() {
+        repository.deleteAllRefreshKeys();
+    }
 }

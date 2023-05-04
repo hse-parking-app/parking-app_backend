@@ -1,16 +1,14 @@
 package org.hse.parkings.service;
 
 import lombok.RequiredArgsConstructor;
-import org.hse.parkings.dao.CarRepository;
-import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.dao.ReservationRepository;
-import org.hse.parkings.dao.building.ParkingSpotRepository;
 import org.hse.parkings.exception.EngagedException;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.model.employee.Employee;
+import org.hse.parkings.service.building.ParkingSpotService;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.hse.parkings.utils.Log;
 import org.hse.parkings.utils.PBQElement;
@@ -39,17 +37,17 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
 
-    private final CarRepository carRepository;
-
-    private final EmployeeRepository employeeRepository;
-
-    private final ParkingSpotRepository parkingSpotRepository;
-
     private final TaskScheduler taskScheduler;
 
-    private final DateTimeProvider dateTimeProvider;
-
     private final Validator validator;
+
+    private final CarService carService;
+
+    private final EmployeeService employeeService;
+
+    private final ParkingSpotService parkingSpotService;
+
+    private final DateTimeProvider dateTimeProvider;
 
     private final PriorityBlockingQueue<PBQElement> reservationsQueue = new PriorityBlockingQueue<>(100,
             (one, two) -> {
@@ -88,12 +86,9 @@ public class ReservationService {
                 .startTime(reservation.getStartTime().truncatedTo(ChronoUnit.SECONDS))
                 .endTime(reservation.getEndTime().truncatedTo(ChronoUnit.SECONDS)).build();
 
-        Car car = carRepository.find(toSave.getCarId())
-                .orElseThrow(() -> new NotFoundException("Car with id = " + toSave.getCarId() + " not found"));
-        Employee employee = employeeRepository.findById(toSave.getEmployeeId())
-                .orElseThrow(() -> new NotFoundException("Employee with id = " + toSave.getEmployeeId() + " not found"));
-        ParkingSpot spot = parkingSpotRepository.find(toSave.getParkingSpotId())
-                .orElseThrow(() -> new NotFoundException("ParkingSpot with id = " + toSave.getParkingSpotId() + " not found"));
+        Car car = carService.findCar(toSave.getCarId());
+        Employee employee = employeeService.find(toSave.getEmployeeId());
+        ParkingSpot spot = parkingSpotService.findParkingSpot(toSave.getParkingSpotId());
 
         if (!spot.getIsAvailable()) {
             throw new NotFoundException("ParkingSpot with id = " + toSave.getParkingSpotId() + " not found");
@@ -113,11 +108,11 @@ public class ReservationService {
         }
 
         reservationsQueue.put(new PBQElement(toSave.getId(), false, toSave.getStartTime(), () -> {
-            parkingSpotRepository.occupySpot(toSave.getParkingSpotId());
+            parkingSpotService.occupySpot(toSave.getParkingSpotId());
             parkingSpotCache.remove(toSave.getParkingSpotId());
         }));
         reservationsQueue.put(new PBQElement(toSave.getId(), true, toSave.getEndTime(), () -> {
-            parkingSpotRepository.freeSpot(toSave.getParkingSpotId());
+            parkingSpotService.freeSpot(toSave.getParkingSpotId());
             parkingSpotCache.remove(toSave.getParkingSpotId());
             reservationRepository.delete(toSave.getId());
             reservationCache.remove(toSave.getId());
@@ -160,7 +155,7 @@ public class ReservationService {
         scheduledTasksCache.get(reservation.getId()).second().cancel(true);
         reservationsQueue.removeIf(item -> item.getIsEndTime() && item.getId().equals(reservation.getId()));
         reservationsQueue.put(new PBQElement(reservation.getId(), true, reservation.getEndTime(), () -> {
-            parkingSpotRepository.freeSpot(reservation.getParkingSpotId());
+            parkingSpotService.freeSpot(reservation.getParkingSpotId());
             parkingSpotCache.remove(reservation.getParkingSpotId());
             reservationRepository.delete(reservation.getId());
             reservationCache.remove(reservation.getId());
@@ -182,7 +177,7 @@ public class ReservationService {
                 = scheduledTasksCache.get(id);
         if (scheduled.first().isDone()) {
             scheduled.second().cancel(true);
-            parkingSpotRepository.freeSpot(reservation.getParkingSpotId());
+            parkingSpotService.freeSpot(reservation.getParkingSpotId());
         } else {
             scheduled.first().cancel(true);
             scheduled.second().cancel(true);
@@ -197,7 +192,7 @@ public class ReservationService {
     @EventListener(ApplicationReadyEvent.class)
     public void deleteAll() {
         reservationRepository.deleteAll();
-        parkingSpotRepository.freeAllParkingSpots();
+        parkingSpotService.freeAllParkingSpots();
 
         scheduledTasksCache.forEach((uuid, pair) -> {
             pair.first().cancel(true);
@@ -227,5 +222,9 @@ public class ReservationService {
 
     public Set<Reservation> findAll() {
         return reservationRepository.findAll();
+    }
+
+    public Set<Reservation> findReservationsOnParkingLevelInInterval(UUID levelId, LocalDateTime startTime, LocalDateTime endTime) {
+        return reservationRepository.getReservationsOnParkingLevelInInterval(levelId, startTime, endTime);
     }
 }

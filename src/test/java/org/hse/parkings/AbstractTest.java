@@ -79,7 +79,7 @@ public class AbstractTest {
             .numberOfLevels(1).build();
     protected final ParkingLevel parkingLevelOne = ParkingLevel.builder()
             .buildingId(building.getId())
-            .layerName("Level 1")
+            .levelNumber(0)
             .numberOfSpots(3)
             .canvas(new CanvasSize(1, 1)).build();
     protected final ParkingSpot parkingSpotA = ParkingSpot.builder()
@@ -108,7 +108,7 @@ public class AbstractTest {
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
     protected final ParkingLevel parkingLevelTwo = ParkingLevel.builder()
             .buildingId(building.getId())
-            .layerName("Level 2")
+            .levelNumber(1)
             .numberOfSpots(3)
             .canvas(new CanvasSize(1, 1)).build();
     protected final ParkingSpot parkingSpotD = ParkingSpot.builder()
@@ -210,12 +210,12 @@ public class AbstractTest {
     void insert(ParkingLevel parkingLevel) {
         jdbcTemplate.update(
                 """
-                        INSERT INTO parking_levels (id, building_id, layer_name, number_of_spots, canvas)
+                        INSERT INTO parking_levels (id, building_id, level_number, number_of_spots, canvas)
                         VALUES (?, ?, ?, ?, ?::integer_pair)
                         """, ps -> {
                     ps.setObject(1, parkingLevel.getId());
                     ps.setObject(2, parkingLevel.getBuildingId());
-                    ps.setString(3, parkingLevel.getLayerName());
+                    ps.setInt(3, parkingLevel.getLevelNumber());
                     ps.setInt(4, parkingLevel.getNumberOfSpots());
                     ps.setObject(5, String.format("(%d,%d)",
                             parkingLevel.getCanvas().getWidth(),

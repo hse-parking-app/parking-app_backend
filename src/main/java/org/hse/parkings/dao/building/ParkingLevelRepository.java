@@ -12,11 +12,11 @@ import java.util.UUID;
 @Mapper
 public interface ParkingLevelRepository {
 
-    @Select("SELECT id, building_id, layer_name, number_of_spots, canvas FROM parking_levels WHERE id = #{id}::uuid")
+    @Select("SELECT id, building_id, level_number, number_of_spots, canvas FROM parking_levels WHERE id = #{id}::uuid")
     @Results(id = "levelsResultMap", value = {
             @Result(column = "id", property = "id"),
             @Result(column = "building_id", property = "buildingId"),
-            @Result(column = "layer_name", property = "layerName"),
+            @Result(column = "level_number", property = "levelNumber"),
             @Result(column = "number_of_spots", property = "numberOfSpots"),
             @Result(column = "canvas", property = "canvas", typeHandler = CanvasSizeTypeHandler.class)
     })
@@ -27,14 +27,14 @@ public interface ParkingLevelRepository {
     Set<ParkingLevel> findAll();
 
     @Insert("""
-            INSERT INTO parking_levels (id, building_id, layer_name, number_of_spots, canvas)
-            VALUES (#{id}::uuid, #{buildingId}::uuid, #{layerName}, #{numberOfSpots}, #{canvas}::integer_pair)
+            INSERT INTO parking_levels (id, building_id, level_number, number_of_spots, canvas)
+            VALUES (#{id}::uuid, #{buildingId}::uuid, #{levelNumber}, #{numberOfSpots}, #{canvas}::integer_pair)
             """)
     void save(ParkingLevel parkingLevel);
 
     @Update("""
             UPDATE parking_levels
-            SET building_id = #{buildingId}, layer_name = #{layerName}, number_of_spots = #{numberOfSpots},
+            SET building_id = #{buildingId}, level_number = #{levelNumber}, number_of_spots = #{numberOfSpots},
             canvas = #{canvas}::integer_pair
             WHERE id = #{id}::uuid
             """)

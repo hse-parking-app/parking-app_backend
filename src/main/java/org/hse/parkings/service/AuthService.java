@@ -2,7 +2,6 @@ package org.hse.parkings.service;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.exception.AuthException;
 import org.hse.parkings.model.employee.Employee;
 import org.hse.parkings.model.employee.Role;
@@ -23,21 +22,18 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final EmployeeRepository employeeRepository;
+    private final PasswordEncoder encoder;
 
     private final EmployeeService employeeService;
 
     private final JwtProvider jwtProvider;
 
-    private final PasswordEncoder encoder;
-
     public JwtResponse login(JwtRequest authRequest) throws AuthException {
-        Employee employee = employeeRepository.findByEmail(authRequest.getEmail())
-                .orElseThrow(() -> new AuthException("Wrong email or password"));
+        Employee employee = employeeService.findByEmail(authRequest.getEmail());
         if (encoder.matches(authRequest.getPassword(), employee.getPassword())) {
             String accessToken = jwtProvider.generateAccessToken(employee);
             String refreshToken = jwtProvider.generateRefreshToken(employee);
-            employeeRepository.putRefreshToken(employee.getEmail(), refreshToken);
+            employeeService.saveRefreshToken(employee.getEmail(), refreshToken);
 
             return new JwtResponse(accessToken, refreshToken);
         } else {
@@ -51,7 +47,7 @@ public class AuthService {
         employeeService.save(employee);
         String accessToken = jwtProvider.generateAccessToken(employee);
         String refreshToken = jwtProvider.generateRefreshToken(employee);
-        employeeRepository.putRefreshToken(employee.getEmail(), refreshToken);
+        employeeService.saveRefreshToken(employee.getEmail(), refreshToken);
 
         return new JwtResponse(accessToken, refreshToken);
     }
@@ -60,10 +56,9 @@ public class AuthService {
         if (jwtProvider.validateRefreshToken(refreshToken)) {
             Claims claims = jwtProvider.getRefreshClaims(refreshToken);
             String email = claims.getSubject();
-            String saveRefreshToken = employeeRepository.getRefreshToken(email);
+            String saveRefreshToken = employeeService.findRefreshToken(email);
             if (saveRefreshToken != null && saveRefreshToken.equals(refreshToken)) {
-                Employee employee = employeeRepository.findByEmail(email)
-                        .orElseThrow(() -> new AuthException("Employee no longer exists"));
+                Employee employee = employeeService.findByEmail(email);
                 String accessToken = jwtProvider.generateAccessToken(employee);
 
                 return new JwtResponse(accessToken, null);
@@ -79,13 +74,12 @@ public class AuthService {
         if (jwtProvider.validateRefreshToken(refreshToken)) {
             Claims claims = jwtProvider.getRefreshClaims(refreshToken);
             String email = claims.getSubject();
-            String saveRefreshToken = employeeRepository.getRefreshToken(email);
+            String saveRefreshToken = employeeService.findRefreshToken(email);
             if (saveRefreshToken != null && saveRefreshToken.equals(refreshToken)) {
-                Employee employee = employeeRepository.findByEmail(email)
-                        .orElseThrow(() -> new AuthException("Wrong email or password"));
+                Employee employee = employeeService.findByEmail(email);
                 String accessToken = jwtProvider.generateAccessToken(employee);
                 String newRefreshToken = jwtProvider.generateRefreshToken(employee);
-                employeeRepository.putRefreshToken(employee.getEmail(), newRefreshToken);
+                employeeService.saveRefreshToken(employee.getEmail(), newRefreshToken);
 
                 return new JwtResponse(accessToken, newRefreshToken);
             }
@@ -100,7 +94,7 @@ public class AuthService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void logoutAll() {
-        employeeRepository.deleteAllRefreshKeys();
+        employeeService.deleteAllRefreshKeys();
 
         Log.logger.info("Refresh keys cleared");
     }

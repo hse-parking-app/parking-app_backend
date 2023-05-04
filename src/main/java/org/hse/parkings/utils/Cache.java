@@ -8,6 +8,7 @@ import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.model.employee.Employee;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +21,7 @@ public class Cache {
     public static ConcurrentHashMap<UUID, Reservation> reservationCache = new ConcurrentHashMap<>();
 
     public static ConcurrentHashMap<UUID, Building> buildingCache = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<UUID, Set<ParkingLevel>> buildingLevelsCache = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<UUID, List<ParkingLevel>> buildingLevelsCache = new ConcurrentHashMap<>();
 
     public static ConcurrentHashMap<UUID, ParkingLevel> parkingLevelCache = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<UUID, Set<ParkingSpot>> parkingLevelSpotsCache = new ConcurrentHashMap<>();

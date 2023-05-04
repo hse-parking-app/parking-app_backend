@@ -2,7 +2,6 @@ package org.hse.parkings.service.building;
 
 import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.ReservationRepository;
-import org.hse.parkings.dao.building.BuildingRepository;
 import org.hse.parkings.dao.building.ParkingLevelRepository;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Reservation;
@@ -21,20 +20,19 @@ import static org.hse.parkings.utils.Cache.*;
 @RequiredArgsConstructor
 public class ParkingLevelService {
 
-    private final BuildingRepository buildingRepository;
-
     private final ParkingLevelRepository parkingLevelRepository;
 
     private final ReservationRepository reservationRepository;
 
+    private final BuildingService buildingService;
+
     public ParkingLevel save(ParkingLevel parkingLevel) throws NotFoundException {
         ParkingLevel toSave = ParkingLevel.builder()
                 .buildingId(parkingLevel.getBuildingId())
-                .layerName(parkingLevel.getLayerName())
+                .levelNumber(parkingLevel.getLevelNumber())
                 .numberOfSpots(parkingLevel.getNumberOfSpots())
                 .canvas(parkingLevel.getCanvas()).build();
-        buildingRepository.find(toSave.getBuildingId())
-                .orElseThrow(() -> new NotFoundException("Building with id = " + toSave.getBuildingId() + " not found"));
+        buildingService.findBuilding(toSave.getBuildingId());
         parkingLevelRepository.save(toSave);
         parkingLevelCache.remove(toSave.getId());
         buildingLevelsCache.remove(toSave.getBuildingId());
@@ -42,8 +40,7 @@ public class ParkingLevelService {
     }
 
     public ParkingLevel update(ParkingLevel parkingLevel) throws NotFoundException {
-        buildingRepository.find(parkingLevel.getBuildingId())
-                .orElseThrow(() -> new NotFoundException("Building with id = " + parkingLevel.getBuildingId() + " not found"));
+        buildingService.findBuilding(parkingLevel.getBuildingId());
         parkingLevelRepository.update(parkingLevel);
         parkingLevelCache.remove(parkingLevel.getId());
         buildingLevelsCache.remove(parkingLevel.getBuildingId());

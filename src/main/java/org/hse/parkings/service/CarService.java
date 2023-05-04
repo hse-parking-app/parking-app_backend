@@ -2,7 +2,6 @@ package org.hse.parkings.service;
 
 import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.CarRepository;
-import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Car;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,7 @@ public class CarService {
 
     private final CarRepository carRepository;
 
-    private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
 
     public Car save(Car car) throws NotFoundException {
         Car toSave = Car.builder()
@@ -27,16 +26,14 @@ public class CarService {
                 .lengthMeters(car.getLengthMeters())
                 .weightTons(car.getWeightTons())
                 .registryNumber(car.getRegistryNumber()).build();
-        employeeRepository.findById(toSave.getOwnerId())
-                .orElseThrow(() -> new NotFoundException("Employee with id = " + toSave.getOwnerId() + " not found"));
+        employeeService.find(toSave.getOwnerId());
         carRepository.save(toSave);
         carCache.remove(toSave.getId());
         return findCar(toSave.getId());
     }
 
     public Car update(Car car) throws NotFoundException {
-        employeeRepository.findById(car.getOwnerId())
-                .orElseThrow(() -> new NotFoundException("Employee with id = " + car.getOwnerId() + " not found"));
+        employeeService.find(car.getOwnerId());
         carRepository.update(car);
         carCache.remove(car.getId());
         return findCar(car.getId());

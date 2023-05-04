@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.*;
 import org.hse.parkings.model.building.Building;
 import org.hse.parkings.model.building.ParkingLevel;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -43,6 +44,6 @@ public interface BuildingRepository {
     @Delete("DELETE FROM buildings")
     void deleteAll();
 
-    @Select("SELECT * FROM parking_levels WHERE building_id = #{buildingId}::uuid")
-    Set<ParkingLevel> findBuildingLevels(UUID buildingId);
+    @Select("SELECT * FROM parking_levels WHERE building_id = #{buildingId}::uuid ORDER BY level_number")
+    List<ParkingLevel> findBuildingLevels(UUID buildingId);
 }

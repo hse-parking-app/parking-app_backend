@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -59,7 +60,7 @@ public class BuildingController {
 
     @GetMapping("/{buildingId}/levels")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
-    Set<ParkingLevel> findBuildingLevels(@PathVariable UUID buildingId) {
+    List<ParkingLevel> findBuildingLevels(@PathVariable UUID buildingId) {
         return service.findBuildingLevels(buildingId);
     }
 }
