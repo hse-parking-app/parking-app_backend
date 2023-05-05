@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hse.parkings.validate.groups.AppUserEmployee;
-import org.hse.parkings.validate.groups.DefaultEmployee;
+import org.hse.parkings.validate.groups.employee.AppUserEmployee;
+import org.hse.parkings.validate.groups.employee.DefaultEmployee;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;

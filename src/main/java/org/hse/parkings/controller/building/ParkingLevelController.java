@@ -40,22 +40,22 @@ public class ParkingLevelController {
         service.deleteAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{levelId}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
-    ParkingLevel get(@PathVariable UUID id) {
-        return service.findParkingLevel(id);
+    ParkingLevel get(@PathVariable UUID levelId) {
+        return service.findParkingLevel(levelId);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{levelId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    void delete(@PathVariable UUID id) {
-        service.delete(id);
+    void delete(@PathVariable UUID levelId) {
+        service.delete(levelId);
     }
 
-    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{levelId}", consumes = APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    ParkingLevel edit(@PathVariable UUID id, @Valid @RequestBody ParkingLevel parkingLevel) {
-        parkingLevel.setId(id);
+    ParkingLevel edit(@PathVariable UUID levelId, @Valid @RequestBody ParkingLevel parkingLevel) {
+        parkingLevel.setId(levelId);
         return service.update(parkingLevel);
     }
 

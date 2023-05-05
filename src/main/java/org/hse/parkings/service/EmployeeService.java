@@ -5,8 +5,12 @@ import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.exception.AlreadyExistsException;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.employee.Employee;
+import org.hse.parkings.model.employee.Role;
+import org.hse.parkings.model.jwt.JwtAuthentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,11 +22,15 @@ public class EmployeeService {
 
     private final EmployeeRepository repository;
 
+    private final PasswordEncoder encoder;
+
+    private final AuthService authService;
+
     public Employee save(Employee employee) throws AlreadyExistsException {
         Employee toSave = Employee.builder()
                 .name(employee.getName())
                 .email(employee.getEmail())
-                .password(employee.getPassword())
+                .password(encoder.encode(employee.getPassword()))
                 .roles(employee.getRoles()).build();
         repository.findByEmail(toSave.getEmail()).ifPresent(s -> {
             throw new AlreadyExistsException("Employee with email = " + s.getEmail() + " already exists");
@@ -33,9 +41,21 @@ public class EmployeeService {
     }
 
     public Employee update(Employee employee) {
+        employee.setPassword(encoder.encode(employee.getPassword()));
         repository.update(employee);
         employeeCache.remove(employee.getId());
         return find(employee.getId());
+    }
+
+    public Employee updateEmployee(Employee employee) throws NotFoundException {
+        JwtAuthentication authInfo = authService.getAuthInfo();
+
+        if (employee.getId() != authInfo.getId()) {
+            throw new NotFoundException("Employee with id = " + employee.getId() + " not found");
+        }
+        employee.setRoles(Collections.singleton(Role.APP_USER));
+
+        return update(employee);
     }
 
     public void delete(UUID id) {
@@ -46,6 +66,12 @@ public class EmployeeService {
     public void deleteAll() {
         repository.deleteAll();
         employeeCache.clear();
+    }
+
+    public void deleteEmployee() {
+        JwtAuthentication authInfo = authService.getAuthInfo();
+
+        delete(authInfo.getId());
     }
 
     public Employee find(UUID id) throws NotFoundException {
@@ -77,7 +103,7 @@ public class EmployeeService {
         repository.putRefreshToken(email, refreshToken);
     }
 
-    public void deleteAllRefreshKeys() {
-        repository.deleteAllRefreshKeys();
+    public void deleteAllRefreshTokens() {
+        repository.deleteAllRefreshTokens();
     }
 }

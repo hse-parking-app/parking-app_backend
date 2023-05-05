@@ -7,7 +7,7 @@ import org.hse.parkings.model.jwt.JwtRequest;
 import org.hse.parkings.model.jwt.JwtResponse;
 import org.hse.parkings.model.jwt.RefreshJwtRequest;
 import org.hse.parkings.service.AuthService;
-import org.hse.parkings.validate.groups.AppUserEmployee;
+import org.hse.parkings.validate.groups.employee.AppUserEmployee;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +39,7 @@ public class AuthController {
     @PostMapping("/update/refresh")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
     public JwtResponse getNewRefreshToken(@Valid @RequestBody RefreshJwtRequest request) {
-        return authService.refresh(request.getRefreshToken());
+        return authService.getRefreshToken(request.getRefreshToken());
     }
 
     @GetMapping("/whoami")

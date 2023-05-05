@@ -3,7 +3,8 @@ package org.hse.parkings.controller;
 import lombok.RequiredArgsConstructor;
 import org.hse.parkings.model.employee.Employee;
 import org.hse.parkings.service.EmployeeService;
-import org.hse.parkings.validate.groups.DefaultEmployee;
+import org.hse.parkings.validate.groups.employee.AppUserEmployee;
+import org.hse.parkings.validate.groups.employee.DefaultEmployee;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,22 +39,34 @@ public class EmployeeController {
         service.deleteAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{employeeId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    Employee get(@PathVariable UUID id) {
-        return service.find(id);
+    Employee get(@PathVariable UUID employeeId) {
+        return service.find(employeeId);
     }
 
-    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{employeeId}", consumes = APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    Employee edit(@PathVariable UUID id, @RequestBody Employee employee) {
-        employee.setId(id);
+    Employee edit(@PathVariable UUID employeeId, @Validated(DefaultEmployee.class) @RequestBody Employee employee) {
+        employee.setId(employeeId);
         return service.update(employee);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{employeeId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    void delete(@PathVariable UUID id) {
-        service.delete(id);
+    void delete(@PathVariable UUID employeeId) {
+        service.delete(employeeId);
+    }
+
+    @PutMapping("/employee")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
+    Employee editEmployee(@Validated(AppUserEmployee.class) @RequestBody Employee employee) {
+        return service.updateEmployee(employee);
+    }
+
+    @DeleteMapping("/employee")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
+    void deleteEmployee() {
+        service.deleteEmployee();
     }
 }

@@ -39,22 +39,22 @@ public class BuildingController {
         service.deleteAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{buildingId}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
-    Building get(@PathVariable UUID id) {
-        return service.findBuilding(id);
+    Building get(@PathVariable UUID buildingId) {
+        return service.findBuilding(buildingId);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{buildingId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    void delete(@PathVariable UUID id) {
-        service.delete(id);
+    void delete(@PathVariable UUID buildingId) {
+        service.delete(buildingId);
     }
 
-    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{buildingId}", consumes = APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    Building edit(@PathVariable UUID id, @Valid @RequestBody Building building) {
-        building.setId(id);
+    Building edit(@PathVariable UUID buildingId, @Valid @RequestBody Building building) {
+        building.setId(buildingId);
         return service.update(building);
     }
 

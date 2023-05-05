@@ -2,8 +2,8 @@ package org.hse.parkings.model;
 
 import lombok.Builder;
 import lombok.Data;
-import org.hse.parkings.validate.groups.AppUserCar;
-import org.hse.parkings.validate.groups.DefaultCar;
+import org.hse.parkings.validate.groups.car.AppUserCar;
+import org.hse.parkings.validate.groups.car.DefaultCar;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

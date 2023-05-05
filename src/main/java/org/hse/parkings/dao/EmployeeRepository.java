@@ -77,5 +77,5 @@ public interface EmployeeRepository {
     void putRefreshToken(String email, String refreshToken);
 
     @Delete("DELETE FROM employee_tokens")
-    void deleteAllRefreshKeys();
+    void deleteAllRefreshTokens();
 }

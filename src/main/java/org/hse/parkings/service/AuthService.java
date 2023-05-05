@@ -11,6 +11,7 @@ import org.hse.parkings.model.jwt.JwtResponse;
 import org.hse.parkings.security.JwtProvider;
 import org.hse.parkings.utils.Log;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,11 +20,12 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class AuthService {
 
     private final PasswordEncoder encoder;
 
+    @Lazy
     private final EmployeeService employeeService;
 
     private final JwtProvider jwtProvider;
@@ -70,7 +72,7 @@ public class AuthService {
         throw new AuthException("Invalid refresh token");
     }
 
-    public JwtResponse refresh(String refreshToken) throws AuthException {
+    public JwtResponse getRefreshToken(String refreshToken) throws AuthException {
         if (jwtProvider.validateRefreshToken(refreshToken)) {
             Claims claims = jwtProvider.getRefreshClaims(refreshToken);
             String email = claims.getSubject();
@@ -94,8 +96,8 @@ public class AuthService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void logoutAll() {
-        employeeService.deleteAllRefreshKeys();
+        employeeService.deleteAllRefreshTokens();
 
-        Log.logger.info("Refresh keys cleared");
+        Log.logger.info("Refresh tokens cleared");
     }
 }

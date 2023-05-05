@@ -37,22 +37,22 @@ public class ParkingSpotController {
         service.deleteAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{spotId}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
-    ParkingSpot get(@PathVariable UUID id) {
-        return service.findParkingSpot(id);
+    ParkingSpot get(@PathVariable UUID spotId) {
+        return service.findParkingSpot(spotId);
     }
 
-    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{spotId}", consumes = APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    ParkingSpot edit(@PathVariable UUID id, @Valid @RequestBody ParkingSpot parkingSpot) {
-        parkingSpot.setId(id);
+    ParkingSpot edit(@PathVariable UUID spotId, @Valid @RequestBody ParkingSpot parkingSpot) {
+        parkingSpot.setId(spotId);
         return service.update(parkingSpot);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{spotId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    void delete(@PathVariable UUID id) {
-        service.delete(id);
+    void delete(@PathVariable UUID spotId) {
+        service.delete(spotId);
     }
 }

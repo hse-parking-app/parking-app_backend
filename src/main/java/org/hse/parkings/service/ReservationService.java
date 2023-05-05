@@ -8,11 +8,13 @@ import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.model.employee.Employee;
+import org.hse.parkings.model.jwt.JwtAuthentication;
 import org.hse.parkings.service.building.ParkingSpotService;
 import org.hse.parkings.utils.DateTimeProvider;
 import org.hse.parkings.utils.Log;
 import org.hse.parkings.utils.PBQElement;
 import org.hse.parkings.utils.Pair;
+import org.hse.parkings.validate.groups.reservation.DefaultReservation;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
@@ -46,6 +48,8 @@ public class ReservationService {
     private final EmployeeService employeeService;
 
     private final ParkingSpotService parkingSpotService;
+
+    private final AuthService authService;
 
     private final DateTimeProvider dateTimeProvider;
 
@@ -130,11 +134,17 @@ public class ReservationService {
         return find(toSave.getId());
     }
 
+    public Reservation saveEmployeeReservation(Reservation reservation) {
+        JwtAuthentication authInfo = authService.getAuthInfo();
+        reservation.setEmployeeId(authInfo.getId());
+        return save(reservation);
+    }
+
     public Reservation extendReservation(UUID id, LocalDateTime endTime) throws EngagedException, NotFoundException {
         Reservation reservation = find(id);
         reservation.setEndTime(endTime.truncatedTo(ChronoUnit.SECONDS));
 
-        Set<ConstraintViolation<Reservation>> violations = validator.validate(reservation);
+        Set<ConstraintViolation<Reservation>> violations = validator.validate(reservation, DefaultReservation.class);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
@@ -171,6 +181,17 @@ public class ReservationService {
         return find(reservation.getId());
     }
 
+    public Reservation extendEmployeeReservation(UUID id, LocalDateTime endTime) throws NotFoundException {
+        Reservation reservation = find(id);
+        JwtAuthentication authInfo = authService.getAuthInfo();
+
+        if (authInfo.getId() != reservation.getEmployeeId()) {
+            throw new NotFoundException("Reservation with id = " + id + " not found");
+        }
+
+        return extendReservation(id, endTime);
+    }
+
     public void delete(UUID id) throws NotFoundException {
         Reservation reservation = find(id);
         Pair<ScheduledFuture<?>, ScheduledFuture<?>> scheduled
@@ -187,6 +208,17 @@ public class ReservationService {
         reservationsQueue.removeIf(item -> item.getId().equals(reservation.getId()));
         reservationRepository.delete(id);
         reservationCache.remove(id);
+    }
+
+    public void deleteEmployeeReservation(UUID id) throws NotFoundException {
+        Reservation reservation = find(id);
+        JwtAuthentication authInfo = authService.getAuthInfo();
+
+        if (authInfo.getId() != reservation.getEmployeeId()) {
+            throw new NotFoundException("Reservation with id = " + id + " not found");
+        }
+
+        delete(id);
     }
 
     @EventListener(ApplicationReadyEvent.class)
