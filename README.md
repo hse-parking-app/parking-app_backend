@@ -6,13 +6,48 @@
 `ADMIN` имеет доступ ко всем методам.\
 `APP_USER` имеет доступ только к тем методам, которые необходимы приложению.
 
-Доступные методы помечены аннотацией
+Доступные `APP_USER` методы либо оканчиваются на `/employee`, либо относятся к `auth-controller`
 
-```java
-@PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
+### Модели
+
+В `ADMIN` методах необходимо указывать все поля в моделях, но для `APP_USER` некоторые могут заполняться автоматически
+
+<details>
+  <summary>Вот примеры моделей без ненужных полей...</summary>
+
+#### Car
+
+```
+{
+    model          string
+    lengthMeters   number ($double)
+    weightTons     number ($double)
+    registryNumber string
+}
 ```
 
-в классах в модуле controller (позже будут вынесены в отдельный эндпоинт)
+#### Employee
+
+```
+{
+    name     string
+    email    string
+    password string
+}
+```
+
+#### Reservation
+
+```
+{
+    carId         string ($uuid)
+    parkingSpotId string ($uuid)
+    startTime     string ($date-time)
+    endTime       string ($date-time)
+}
+```
+
+</details>
 
 ### Пользователи
 
@@ -41,7 +76,7 @@ roles: APP_USER
 ### Запуск проекта
 
 ```bash
- docker-compose build && docker-compose up
+ docker compose build && docker compose up
 ```
 
 Поднимется приложение на порту `8080`. Swagger-спецификация доступна по адресу:
