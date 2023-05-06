@@ -32,13 +32,13 @@ public class AuthController {
     }
 
     @PostMapping("/update/access")
-    public JwtResponse getNewAccessToken(@Valid @RequestBody RefreshJwtRequest request) {
+    public JwtResponse getNewAccessToken(@RequestBody RefreshJwtRequest request) {
         return authService.getAccessToken(request.getRefreshToken());
     }
 
     @PostMapping("/update/refresh")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
-    public JwtResponse getNewRefreshToken(@Valid @RequestBody RefreshJwtRequest request) {
+    public JwtResponse getNewRefreshToken(@RequestBody RefreshJwtRequest request) {
         return authService.getRefreshToken(request.getRefreshToken());
     }
 

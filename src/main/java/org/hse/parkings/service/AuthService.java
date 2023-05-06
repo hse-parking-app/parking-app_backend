@@ -55,7 +55,7 @@ public class AuthService {
     }
 
     public JwtResponse getAccessToken(String refreshToken) throws AuthException {
-        if (jwtProvider.validateRefreshToken(refreshToken)) {
+        if (refreshToken != null && jwtProvider.validateRefreshToken(refreshToken)) {
             Claims claims = jwtProvider.getRefreshClaims(refreshToken);
             String email = claims.getSubject();
             String saveRefreshToken = employeeService.findRefreshToken(email);
@@ -73,7 +73,7 @@ public class AuthService {
     }
 
     public JwtResponse getRefreshToken(String refreshToken) throws AuthException {
-        if (jwtProvider.validateRefreshToken(refreshToken)) {
+        if (refreshToken != null && jwtProvider.validateRefreshToken(refreshToken)) {
             Claims claims = jwtProvider.getRefreshClaims(refreshToken);
             String email = claims.getSubject();
             String saveRefreshToken = employeeService.findRefreshToken(email);

@@ -67,7 +67,7 @@ public class JwtProvider {
     }
 
     private boolean validateToken(String token, Key secret) {
-        if (token == null) {
+        if (token == null || token.isBlank()) {
             return false;
         }
         Jwts.parserBuilder()
