@@ -26,7 +26,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     public static final String[] excludedFromJwtEndpoints = new String[]{"/auth/signUp", "/auth/login",
-            "/auth/update/access", "/auth/update/refresh"};
+            "/auth/update/access", "/auth/update/refresh", "/time/current"};
 
     private final JwtFilter jwtFilter;
 
