@@ -98,7 +98,7 @@ public class ParkingLevelsLogicTests extends AbstractTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
-        List<String> response = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.[?(@.isFree==false)]");
+        List<String> response = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.[?(@.isFree == false)]");
         Assertions.assertEquals(1, response.size());
     }
 

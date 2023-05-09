@@ -15,5 +15,6 @@ spring:
   jackson:
     time-zone: Europe/Moscow
 
+
 mybatis:
   type-handlers-package: org.hse.parkings.handler
