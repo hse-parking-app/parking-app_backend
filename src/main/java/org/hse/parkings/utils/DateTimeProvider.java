@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 public enum DateTimeProvider {
     INSTANCE;
 
-    private final Clock defaultClock = Clock.systemDefaultZone();
+    private final Clock defaultClock = Clock.systemUTC();
     private Clock clock = defaultClock;
 
     public static DateTimeProvider getInstance() {
