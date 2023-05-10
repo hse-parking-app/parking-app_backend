@@ -14,7 +14,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.hse.parkings.utils.Cache.*;
+import static org.hse.parkings.utils.Cache.parkingLevelCache;
+import static org.hse.parkings.utils.Cache.parkingSpotCache;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,6 @@ public class ParkingLevelService {
         buildingService.findBuilding(toSave.getBuildingId());
         parkingLevelRepository.save(toSave);
         parkingLevelCache.remove(toSave.getId());
-        buildingLevelsCache.remove(toSave.getBuildingId());
         return findParkingLevel(toSave.getId());
     }
 
@@ -43,7 +43,6 @@ public class ParkingLevelService {
         buildingService.findBuilding(parkingLevel.getBuildingId());
         parkingLevelRepository.update(parkingLevel);
         parkingLevelCache.remove(parkingLevel.getId());
-        buildingLevelsCache.remove(parkingLevel.getBuildingId());
         return findParkingLevel(parkingLevel.getId());
     }
 
@@ -53,15 +52,12 @@ public class ParkingLevelService {
 
         parkingLevelRepository.delete(id);
         parkingLevelCache.remove(id);
-        buildingLevelsCache.remove(parkingLevel.getBuildingId());
     }
 
     public void deleteAll() {
         parkingLevelRepository.deleteAll();
         parkingLevelCache.clear();
-        buildingLevelsCache.clear();
         parkingSpotCache.clear();
-        parkingLevelSpotsCache.clear();
     }
 
     public ParkingLevel findParkingLevel(UUID id) throws NotFoundException {
@@ -80,16 +76,11 @@ public class ParkingLevelService {
     }
 
     public Set<ParkingSpot> findParkingSpots(UUID levelId) {
-        if (parkingLevelSpotsCache.containsKey(levelId)) {
-            return parkingLevelSpotsCache.get(levelId);
-        }
         ParkingLevel parkingLevel = parkingLevelRepository.find(levelId)
                 .orElseThrow(() -> new NotFoundException("ParkingLevel with id = " + levelId + " not found"));
         parkingLevelCache.put(levelId, parkingLevel);
-        Set<ParkingSpot> parkingLevelSpots = parkingLevelRepository.findParkingSpots(levelId);
-        parkingLevelSpotsCache.put(levelId, parkingLevelSpots);
 
-        return parkingLevelSpots;
+        return parkingLevelRepository.findParkingSpots(levelId);
     }
 
     public Set<ParkingSpot> getFreeSpotsOnLevelInInterval(UUID levelId, LocalDateTime startTime, LocalDateTime endTime) {

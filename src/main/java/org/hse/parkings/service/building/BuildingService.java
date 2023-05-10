@@ -39,12 +39,10 @@ public class BuildingService {
         List<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(id);
         buildingLevels.forEach(item -> {
             parkingLevelCache.remove(item.getId());
-            parkingLevelSpotsCache.remove(item.getId());
         });
 
         buildingRepository.delete(id);
         buildingCache.remove(id);
-        buildingLevelsCache.remove(id);
         parkingSpotCache.clear();
     }
 
@@ -52,9 +50,7 @@ public class BuildingService {
         buildingRepository.deleteAll();
         buildingCache.clear();
         parkingLevelCache.clear();
-        buildingLevelsCache.clear();
         parkingSpotCache.clear();
-        parkingLevelSpotsCache.clear();
     }
 
     public Building findBuilding(UUID id) throws NotFoundException {
@@ -72,15 +68,10 @@ public class BuildingService {
     }
 
     public List<ParkingLevel> findBuildingLevels(UUID buildingId) throws NotFoundException {
-        if (buildingLevelsCache.containsKey(buildingId)) {
-            return buildingLevelsCache.get(buildingId);
-        }
         Building building = buildingRepository.find(buildingId)
                 .orElseThrow(() -> new NotFoundException("Building with id = " + buildingId + " not found"));
         buildingCache.put(buildingId, building);
-        List<ParkingLevel> buildingLevels = buildingRepository.findBuildingLevels(buildingId);
-        buildingLevelsCache.put(buildingId, buildingLevels);
 
-        return buildingLevels;
+        return buildingRepository.findBuildingLevels(buildingId);
     }
 }

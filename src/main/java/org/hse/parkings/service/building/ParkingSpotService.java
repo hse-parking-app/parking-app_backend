@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.hse.parkings.utils.Cache.parkingLevelSpotsCache;
 import static org.hse.parkings.utils.Cache.parkingSpotCache;
 
 @Service
@@ -35,7 +34,6 @@ public class ParkingSpotService {
         buildingRepository.findBuilding(toSave.getBuildingId());
         parkingSpotRepository.save(toSave);
         parkingSpotCache.remove(toSave.getId());
-        parkingLevelSpotsCache.remove(toSave.getLevelId());
         return findParkingSpot(toSave.getId());
     }
 
@@ -44,23 +42,20 @@ public class ParkingSpotService {
         buildingRepository.findBuilding(parkingSpot.getBuildingId());
         parkingSpotRepository.update(parkingSpot);
         parkingSpotCache.remove(parkingSpot.getId());
-        parkingLevelSpotsCache.remove(parkingSpot.getLevelId());
         return findParkingSpot(parkingSpot.getId());
     }
 
     public void delete(UUID id) throws NotFoundException {
-        ParkingSpot parkingSpot = parkingSpotRepository.find(id)
+        parkingSpotRepository.find(id)
                 .orElseThrow(() -> new NotFoundException("ParkingSpot with id = " + id + " not found"));
 
         parkingSpotRepository.delete(id);
         parkingSpotCache.remove(id);
-        parkingLevelSpotsCache.remove(parkingSpot.getLevelId());
     }
 
     public void deleteAll() {
         parkingSpotRepository.deleteAll();
         parkingSpotCache.clear();
-        parkingLevelSpotsCache.clear();
     }
 
     public ParkingSpot findParkingSpot(UUID id) throws NotFoundException {
