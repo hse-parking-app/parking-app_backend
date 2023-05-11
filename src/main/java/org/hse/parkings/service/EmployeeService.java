@@ -50,7 +50,7 @@ public class EmployeeService {
     public Employee updateEmployee(Employee employee) throws NotFoundException {
         JwtAuthentication authInfo = authService.getAuthInfo();
 
-        if (employee.getId() != authInfo.getId()) {
+        if (!employee.getId().equals(authInfo.getId())) {
             throw new NotFoundException("Employee with id = " + employee.getId() + " not found");
         }
         employee.setRoles(Collections.singleton(Role.APP_USER));

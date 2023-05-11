@@ -214,7 +214,7 @@ public class ReservationService {
         Reservation reservation = find(id);
         JwtAuthentication authInfo = authService.getAuthInfo();
 
-        if (authInfo.getId() != reservation.getEmployeeId()) {
+        if (!authInfo.getId().equals(reservation.getEmployeeId())) {
             throw new NotFoundException("Reservation with id = " + id + " not found");
         }
 

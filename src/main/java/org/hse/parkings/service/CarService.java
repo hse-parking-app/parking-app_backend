@@ -51,7 +51,7 @@ public class CarService {
         Car employeeCar = findCar(car.getId());
         JwtAuthentication authInfo = authService.getAuthInfo();
 
-        if (employeeCar.getOwnerId() != authInfo.getId()) {
+        if (!employeeCar.getOwnerId().equals(authInfo.getId())) {
             throw new NotFoundException("Car with id = " + car.getId() + " not found");
         }
         car.setOwnerId(authInfo.getId());
@@ -73,7 +73,7 @@ public class CarService {
         Car car = findCar(id);
         JwtAuthentication authInfo = authService.getAuthInfo();
 
-        if (car.getOwnerId() != authInfo.getId()) {
+        if (!car.getOwnerId().equals(authInfo.getId())) {
             throw new NotFoundException("Car with id = " + id + " not found");
         }
 
