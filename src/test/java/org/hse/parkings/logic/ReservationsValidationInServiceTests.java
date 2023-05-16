@@ -6,7 +6,6 @@ import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.model.employee.Employee;
-import org.hse.parkings.utils.DateTimeProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -47,7 +46,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         Car temp = carSupraOfAlice;
         temp.setId(UUID.randomUUID());
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(temp.getId())
                 .employeeId(employeeAlice.getId())
@@ -72,7 +71,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         Employee temp = employeeAlice;
         temp.setId(UUID.randomUUID());
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(temp.getId())
@@ -97,7 +96,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         ParkingSpot temp = parkingSpotA;
         temp.setId(UUID.randomUUID());
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -119,7 +118,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carAudiOfBob.getId())
                 .employeeId(employeeAlice.getId())
@@ -141,7 +140,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -172,7 +171,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -207,7 +206,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -241,7 +240,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -277,7 +276,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -313,7 +312,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -348,7 +347,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -383,7 +382,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -418,7 +417,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -454,7 +453,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carAudiOfBob.getId())
                 .employeeId(employeeBob.getId())
@@ -490,7 +489,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -526,7 +525,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carTeslaOfBob.getId())
                 .employeeId(employeeBob.getId())
@@ -562,7 +561,7 @@ public class ReservationsValidationInServiceTests extends AbstractTest {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carTeslaOfBob.getId())
                 .employeeId(employeeBob.getId())

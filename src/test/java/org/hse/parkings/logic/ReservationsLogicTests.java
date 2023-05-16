@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import org.hse.parkings.AbstractTest;
 import org.hse.parkings.dao.building.ParkingSpotRepository;
 import org.hse.parkings.model.Reservation;
-import org.hse.parkings.utils.DateTimeProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -52,7 +51,7 @@ public class ReservationsLogicTests extends AbstractTest {
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -81,7 +80,7 @@ public class ReservationsLogicTests extends AbstractTest {
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -126,7 +125,7 @@ public class ReservationsLogicTests extends AbstractTest {
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -176,7 +175,7 @@ public class ReservationsLogicTests extends AbstractTest {
         scheduler.initialize();
 
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -226,7 +225,7 @@ public class ReservationsLogicTests extends AbstractTest {
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
@@ -276,7 +275,7 @@ public class ReservationsLogicTests extends AbstractTest {
         scheduler.setClock(dateTimeProvider.getClock());
         scheduler.initialize();
 
-        LocalDateTime localDateTime = DateTimeProvider.getInstance().getZonedDateTime().toLocalDateTime();
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
         Reservation reservation = Reservation.builder()
                 .carId(carSupraOfAlice.getId())
                 .employeeId(employeeAlice.getId())
