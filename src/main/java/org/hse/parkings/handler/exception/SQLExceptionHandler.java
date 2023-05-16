@@ -1,5 +1,6 @@
 package org.hse.parkings.handler.exception;
 
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.model.error.CauseMessage;
 import org.hse.parkings.model.error.Error;
 import org.hse.parkings.utils.DateTimeProvider;
@@ -13,7 +14,10 @@ import java.sql.SQLException;
 import java.util.Collections;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class SQLExceptionHandler {
+
+    private final DateTimeProvider dateTimeProvider;
 
     @ExceptionHandler(SQLException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
@@ -21,7 +25,7 @@ public class SQLExceptionHandler {
         return new Error(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );

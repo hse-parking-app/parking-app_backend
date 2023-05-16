@@ -32,6 +32,8 @@ public class SecurityConfig {
 
     private final ObjectMapper jackson;
 
+    private final DateTimeProvider dateTimeProvider;
+
     @Bean
     public PasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
@@ -50,7 +52,7 @@ public class SecurityConfig {
                     response.getWriter().write(jackson.writeValueAsString(new Error(
                             HttpStatus.FORBIDDEN,
                             HttpStatus.FORBIDDEN.value(),
-                            DateTimeProvider.getInstance().getZonedDateTime(),
+                            dateTimeProvider.getZonedDateTime(),
                             Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                             "uri=" + request.getServletPath()
                     )));

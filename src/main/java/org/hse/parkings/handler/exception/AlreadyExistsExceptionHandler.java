@@ -1,5 +1,6 @@
 package org.hse.parkings.handler.exception;
 
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.exception.AlreadyExistsException;
 import org.hse.parkings.model.error.CauseMessage;
 import org.hse.parkings.model.error.Error;
@@ -13,7 +14,10 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.Collections;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class AlreadyExistsExceptionHandler {
+
+    private final DateTimeProvider dateTimeProvider;
 
     @ExceptionHandler(AlreadyExistsException.class)
     @ResponseStatus(value = HttpStatus.CONFLICT)
@@ -21,7 +25,7 @@ public class AlreadyExistsExceptionHandler {
         return new Error(
                 HttpStatus.CONFLICT,
                 HttpStatus.CONFLICT.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );

@@ -1,5 +1,6 @@
 package org.hse.parkings.handler.exception;
 
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.exception.EngagedException;
 import org.hse.parkings.model.error.CauseMessage;
 import org.hse.parkings.model.error.Error;
@@ -18,7 +19,10 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class ValidationExceptionsHandler {
+
+    private final DateTimeProvider dateTimeProvider;
 
     @ExceptionHandler(EngagedException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -26,7 +30,7 @@ public class ValidationExceptionsHandler {
         return new Error(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );
@@ -38,7 +42,7 @@ public class ValidationExceptionsHandler {
         return new Error(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 ex.getConstraintViolations()
                         .stream()
                         .map(e -> new CauseMessage(e.getPropertyPath().toString(), e.getMessage()))
@@ -53,7 +57,7 @@ public class ValidationExceptionsHandler {
         return new Error(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 ex.getBindingResult()
                         .getFieldErrors()
                         .stream()
@@ -69,7 +73,7 @@ public class ValidationExceptionsHandler {
         return new Error(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );
@@ -81,7 +85,7 @@ public class ValidationExceptionsHandler {
         return new Error(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 Collections.singletonList(new CauseMessage(ex.getName(), ex.getMessage())),
                 request.getDescription(false)
         );

@@ -12,17 +12,12 @@ import java.time.Clock;
 public class ClockConfig {
 
     @Bean
-    public DateTimeProvider dateTimeProvider() {
-        return DateTimeProvider.getInstance();
+    public Clock getClock(DateTimeProvider dateTimeProvider) {
+        return dateTimeProvider.getClock();
     }
 
     @Bean
-    public Clock getClock() {
-        return DateTimeProvider.getInstance().getClock();
-    }
-
-    @Bean
-    LocalValidatorFactoryBean defaultValidator(Clock clock) {
+    public LocalValidatorFactoryBean defaultValidator(Clock clock) {
         LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean() {
 
             @Override

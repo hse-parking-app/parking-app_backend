@@ -1,6 +1,7 @@
 package org.hse.parkings.handler.exception;
 
 import io.jsonwebtoken.JwtException;
+import lombok.RequiredArgsConstructor;
 import org.hse.parkings.exception.AuthException;
 import org.hse.parkings.model.error.CauseMessage;
 import org.hse.parkings.model.error.Error;
@@ -15,7 +16,10 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.Collections;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class AuthExceptionHandler {
+
+    private final DateTimeProvider dateTimeProvider;
 
     @ExceptionHandler({AuthException.class, JwtException.class})
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
@@ -23,7 +27,7 @@ public class AuthExceptionHandler {
         return new Error(
                 HttpStatus.UNAUTHORIZED,
                 HttpStatus.UNAUTHORIZED.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );
@@ -35,7 +39,7 @@ public class AuthExceptionHandler {
         return new Error(
                 HttpStatus.FORBIDDEN,
                 HttpStatus.FORBIDDEN.value(),
-                DateTimeProvider.getInstance().getZonedDateTime(),
+                dateTimeProvider.getZonedDateTime(),
                 Collections.singletonList(new CauseMessage("error", ex.getMessage())),
                 request.getDescription(false)
         );

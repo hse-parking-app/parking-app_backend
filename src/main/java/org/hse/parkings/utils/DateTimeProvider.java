@@ -1,18 +1,19 @@
 package org.hse.parkings.utils;
 
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
-public enum DateTimeProvider {
-    INSTANCE;
+@Component
+@NoArgsConstructor
+public class DateTimeProvider {
 
     private final Clock defaultClock = Clock.systemUTC();
-    private Clock clock = defaultClock;
 
-    public static DateTimeProvider getInstance() {
-        return INSTANCE;
-    }
+    private Clock clock = defaultClock;
 
     public ZonedDateTime getZonedDateTime() {
         return ZonedDateTime.now(clock);
@@ -20,10 +21,6 @@ public enum DateTimeProvider {
 
     public Clock getClock() {
         return this.clock;
-    }
-
-    public void setClock(Clock clock) {
-        this.clock = clock;
     }
 
     public void resetClock() {
