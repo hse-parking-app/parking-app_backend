@@ -34,7 +34,7 @@ public interface ParkingLevelRepository {
 
     @Update("""
             UPDATE parking_levels
-            SET building_id = #{buildingId}, level_number = #{levelNumber}, number_of_spots = #{numberOfSpots},
+            SET building_id = #{buildingId}::uuid, level_number = #{levelNumber}, number_of_spots = #{numberOfSpots},
             canvas = #{canvas}::integer_pair
             WHERE id = #{id}::uuid
             """)

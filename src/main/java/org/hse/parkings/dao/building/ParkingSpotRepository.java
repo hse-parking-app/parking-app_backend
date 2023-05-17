@@ -42,7 +42,7 @@ public interface ParkingSpotRepository {
 
     @Update("""
             UPDATE parking_spots SET
-            level_id = #{levelId}, building_id = #{buildingId}, parking_number = #{parkingNumber},
+            level_id = #{levelId}::uuid, building_id = #{buildingId}::uuid, parking_number = #{parkingNumber},
             is_available = #{isAvailable}, is_free = #{isFree}, canvas = #{canvas}::integer_pair,
             on_canvas_coords = #{onCanvasCoords}::integer_pair
             WHERE id = #{id}::uuid
