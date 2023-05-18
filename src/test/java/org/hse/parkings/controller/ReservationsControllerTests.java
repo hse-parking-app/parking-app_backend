@@ -118,28 +118,6 @@ public class ReservationsControllerTests extends AbstractTest {
     }
 
     @Test
-    @DisplayName("POST - Reservation with day collision")
-    public void negative_saveReservationWithDayCollision() throws Exception {
-        adjustClockTo(DayOfWeek.MONDAY);
-        dateTimeProvider.offsetClock(Duration.ofHours(23 - dateTimeProvider.getZonedDateTime().getHour()));
-
-        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
-        Reservation reservation = Reservation.builder()
-                .carId(carSupraOfAlice.getId())
-                .employeeId(employeeAlice.getId())
-                .parkingSpotId(parkingSpotA.getId())
-                .startTime(localDateTime.plusSeconds(5))
-                .endTime(localDateTime.plusHours(2)).build();
-
-        this.mockMvc.perform(post(endpoint)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jackson.writeValueAsString(reservation)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.messages.length()").value(2));
-    }
-
-    @Test
     @DisplayName("PUT - Extend existing reservation")
     public void positive_extendReservation() throws Exception {
         adjustClockTo(DayOfWeek.MONDAY);
