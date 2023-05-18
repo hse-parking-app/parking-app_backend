@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = MultiDayValidator.class)
-public @interface NotMultiDayReservation {
+@Constraint(validatedBy = MaximumReservationRangeValidator.class)
+public @interface MaximumReservationRange {
 
     String message() default "{org.hse.parkings.validate.NotMultiDayReservation.message}";
 

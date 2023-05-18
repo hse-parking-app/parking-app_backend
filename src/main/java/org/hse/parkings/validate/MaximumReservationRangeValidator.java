@@ -4,13 +4,14 @@ import org.hse.parkings.model.Reservation;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.time.temporal.ChronoUnit;
 
-public class MultiDayValidator implements ConstraintValidator<NotMultiDayReservation, Reservation> {
+public class MaximumReservationRangeValidator implements ConstraintValidator<MaximumReservationRange, Reservation> {
 
     String message;
 
     @Override
-    public void initialize(NotMultiDayReservation constraintAnnotation) {
+    public void initialize(MaximumReservationRange constraintAnnotation) {
         this.message = constraintAnnotation.message();
     }
 
@@ -24,6 +25,6 @@ public class MultiDayValidator implements ConstraintValidator<NotMultiDayReserva
                 .addPropertyNode("endTime")
                 .addConstraintViolation();
 
-        return reservation.getStartTime().toLocalDate().isEqual(reservation.getEndTime().toLocalDate());
+        return ChronoUnit.DAYS.between(reservation.getStartTime(), reservation.getEndTime()) < 1;
     }
 }
