@@ -25,7 +25,7 @@ import java.util.Collections;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    public static final String[] excludedFromJwtEndpoints = new String[]{"/auth/signUp", "/auth/login",
+    public static final String[] endpointsExcludedFromJwt = new String[]{"/auth/signUp", "/auth/login",
             "/auth/update/access", "/auth/update/refresh", "/time/current"};
 
     private final JwtFilter jwtFilter;
@@ -61,7 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         request -> request
                                 .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger/**", "/swagger*").permitAll()
-                                .antMatchers(excludedFromJwtEndpoints).permitAll()
+                                .antMatchers(endpointsExcludedFromJwt).permitAll()
                                 .anyRequest().authenticated()
                                 .and()
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

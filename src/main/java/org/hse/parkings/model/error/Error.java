@@ -1,13 +1,13 @@
 package org.hse.parkings.model.error;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class Error {
 

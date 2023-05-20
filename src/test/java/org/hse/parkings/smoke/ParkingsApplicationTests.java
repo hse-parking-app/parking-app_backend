@@ -1,5 +1,6 @@
 package org.hse.parkings.smoke;
 
+import org.hse.parkings.AbstractTest;
 import org.hse.parkings.controller.CarController;
 import org.hse.parkings.controller.EmployeeController;
 import org.hse.parkings.controller.ReservationController;
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @DisplayName("Smoke")
-class ParkingsApplicationTests {
+class ParkingsApplicationTests extends AbstractTest {
 
     @Autowired
     private CarController carController;

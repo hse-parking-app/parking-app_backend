@@ -1,0 +1,13 @@
+secret:
+  access: ${jwt.secret.access}
+  refresh: ${jwt.secret.refresh}
+
+spring:
+  config:
+    import: classpath:application.yml
+  datasource:
+    url: jdbc:tc:postgresql:13://hostname/main?TC_REUSABLE=true
+    driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+mybatis:
+  type-handlers-package: org.hse.parkings.handler

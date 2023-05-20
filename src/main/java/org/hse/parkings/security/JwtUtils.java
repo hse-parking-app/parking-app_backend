@@ -12,13 +12,11 @@ import java.util.stream.Collectors;
 public class JwtUtils {
 
     public static JwtAuthentication generate(Claims claims) {
-        JwtAuthentication jwtInfoToken = new JwtAuthentication();
-        jwtInfoToken.setRoles(getRoles(claims));
-        jwtInfoToken.setId(UUID.fromString(claims.get("employee_id", String.class)));
-        jwtInfoToken.setName(claims.get("name", String.class));
-        jwtInfoToken.setEmail(claims.getSubject());
-
-        return jwtInfoToken;
+        return JwtAuthentication.builder()
+                .roles(getRoles(claims))
+                .id(UUID.fromString(claims.get("employee_id", String.class)))
+                .name(claims.get("name", String.class))
+                .email(claims.getSubject()).build();
     }
 
     @SuppressWarnings("unchecked")

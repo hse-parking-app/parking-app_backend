@@ -26,7 +26,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@WithMockUser(username = "admin", roles = {"ADMIN"})
 @DisplayName("Reservations validation in service")
 public class ReservationsValidationInServiceTests extends AbstractTest {
 

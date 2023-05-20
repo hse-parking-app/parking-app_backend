@@ -96,6 +96,28 @@ public class ReservationsControllerTests extends AbstractTest {
     }
 
     @Test
+    @DisplayName("POST - Reservation with negative duration")
+    public void negative_saveReservationWithNegativeDuration() throws Exception {
+        adjustClockTo(DayOfWeek.MONDAY);
+        dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
+
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
+        Reservation reservation = Reservation.builder()
+                .carId(carSupraOfAlice.getId())
+                .employeeId(employeeAlice.getId())
+                .parkingSpotId(parkingSpotA.getId())
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.minusHours(3)).build();
+
+        this.mockMvc.perform(post(endpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(reservation)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.messages.length()").value(2));
+    }
+
+    @Test
     @DisplayName("POST - Reservation on weekends")
     public void negative_saveReservationOnWeekends() throws Exception {
         adjustClockTo(DayOfWeek.SUNDAY);

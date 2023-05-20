@@ -1,6 +1,7 @@
 package org.hse.parkings.model.jwt;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
 import lombok.Data;
 import org.hse.parkings.model.employee.Role;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Data
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(value = {"authenticated", "authorities", "credentials", "details"})
 public class JwtAuthentication implements Authentication {
 

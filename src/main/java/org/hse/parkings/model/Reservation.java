@@ -3,7 +3,6 @@ package org.hse.parkings.model;
 import lombok.Builder;
 import lombok.Data;
 import org.hse.parkings.validate.DurationIsLess24Hours;
-import org.hse.parkings.validate.MaximumReservationRange;
 import org.hse.parkings.validate.NotWeekends;
 import org.hse.parkings.validate.groups.reservation.AppUserReservation;
 import org.hse.parkings.validate.groups.reservation.DefaultReservation;
@@ -17,7 +16,6 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @DurationIsLess24Hours(message = "Duration between start time and end time must be more than 0 and less than 24 hours", groups = {DefaultReservation.class, AppUserReservation.class})
 @NotWeekends(message = "Cannot book a parking spot on Saturday and Sunday", groups = {DefaultReservation.class, AppUserReservation.class})
-@MaximumReservationRange(message = "Reservation is longer than allowed maximum", groups = {DefaultReservation.class, AppUserReservation.class})
 public class Reservation {
 
     @Builder.Default

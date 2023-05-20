@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.hse.parkings.security.SecurityConfig.excludedFromJwtEndpoints;
+import static org.hse.parkings.security.SecurityConfig.endpointsExcludedFromJwt;
 
 @Component
 @RequiredArgsConstructor
@@ -65,7 +65,7 @@ public class JwtFilter extends GenericFilterBean {
     }
 
     boolean shouldNotFilter(HttpServletRequest request) {
-        return Arrays.stream(excludedFromJwtEndpoints)
+        return Arrays.stream(endpointsExcludedFromJwt)
                 .anyMatch(i -> new AntPathMatcher().match(i, request.getServletPath()));
     }
 }

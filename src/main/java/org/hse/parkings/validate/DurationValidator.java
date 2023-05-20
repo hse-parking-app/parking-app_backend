@@ -28,6 +28,6 @@ public class DurationValidator implements ConstraintValidator<DurationIsLess24Ho
                 .addConstraintViolation();
 
         Duration duration = Duration.between(reservation.getStartTime(), reservation.getEndTime());
-        return duration.toHours() <= 24L && !duration.isNegative();
+        return duration.toHours() < 24L && !duration.isNegative();
     }
 }
