@@ -1,5 +1,8 @@
 # parkings
 
+[![build + tests run](https://github.com/hse-parking-app/parking-app_backend/actions/workflows/run-tests-and-coverage.yml/badge.svg)](https://github.com/hse-parking-app/parking-app_backend/actions/workflows/run-tests-and-coverage.yml)
+[![codecov](https://codecov.io/github/hse-parking-app/parking-app_backend/branch/develop/graph/badge.svg?token=HEKFYWMSEO)](https://codecov.io/github/hse-parking-app/parking-app_backend)
+
 ### Роли
 
 Предусмотрены две роли: `ADMIN` и `APP_USER`.\
