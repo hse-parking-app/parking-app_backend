@@ -1,4 +1,4 @@
-name: Parkings Tests
+name: build + tests run
 on:
   push:
     branches:
@@ -9,6 +9,9 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -19,10 +22,10 @@ jobs:
           java-version: '17'
           distribution: 'oracle'
 
-      - name: Build + Tests
-        run: mvn -B test surefire-report:report-only -Dformat=xml
+      - name: Tests coverage
+        run: mvn clean surefire-report:report-only -Dformat=xml org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report
 
-      - name: Publish Test Report
+      - name: Publish test report
         uses: mikepenz/action-junit-report@v3
         if: success() || failure()
         with:
@@ -31,3 +34,10 @@ jobs:
           include_passed: true
           fail_on_failure: true
           detailed_summary: true
+
+      - name: Publish coverage report
+        if: success()
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ github.workspace }}/target/site/jacoco/
