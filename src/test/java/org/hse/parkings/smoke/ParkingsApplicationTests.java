@@ -15,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@DisplayName("Smoke")
+@DisplayName("Context tests")
 class ParkingsApplicationTests extends AbstractTest {
 
     @Autowired

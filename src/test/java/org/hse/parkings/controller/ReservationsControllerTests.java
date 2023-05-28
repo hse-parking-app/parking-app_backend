@@ -3,11 +3,9 @@ package org.hse.parkings.controller;
 import com.jayway.jsonpath.JsonPath;
 import org.hse.parkings.AbstractTest;
 import org.hse.parkings.model.Reservation;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -25,7 +23,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Reservations controller")
 public class ReservationsControllerTests extends AbstractTest {
 
-    private final String endpoint = "/reservations";
+    @BeforeAll
+    void userForTests() throws Exception {
+        loginAs(employeeAlice);
+    }
 
     @AfterEach
     void restoreTime() {
@@ -46,7 +47,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusSeconds(5))
                 .endTime(localDateTime.plusSeconds(10)).build();
 
-        this.mockMvc.perform(post(endpoint)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
@@ -66,7 +68,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.minusSeconds(30))
                 .endTime(localDateTime.plusSeconds(10)).build();
 
-        this.mockMvc.perform(post(endpoint)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isBadRequest())
@@ -87,7 +90,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusSeconds(5))
                 .endTime(localDateTime.plusDays(1).plusHours(1)).build();
 
-        this.mockMvc.perform(post(endpoint)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isBadRequest())
@@ -109,7 +113,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusSeconds(5))
                 .endTime(localDateTime.minusHours(3)).build();
 
-        this.mockMvc.perform(post(endpoint)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isBadRequest())
@@ -131,7 +136,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusSeconds(5))
                 .endTime(localDateTime.plusSeconds(10)).build();
 
-        this.mockMvc.perform(post(endpoint)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isBadRequest())
@@ -153,7 +159,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusSeconds(5))
                 .endTime(localDateTime.plusHours(2)).build();
 
-        MvcResult resultPost = this.mockMvc.perform(post(endpoint)
+        MvcResult resultPost = this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
@@ -163,7 +170,8 @@ public class ReservationsControllerTests extends AbstractTest {
         Assertions.assertEquals(scheduledTasksCache.size(), 1);
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
-        this.mockMvc.perform(put(endpoint + "/" + id)
+        this.mockMvc.perform(put(reservationsEndpoint + "/" + id)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .param("endTime", String.valueOf(localDateTime.plusHours(3))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -194,7 +202,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusHours(2))
                 .endTime(localDateTime.plusHours(4)).build();
 
-        MvcResult resultPost = this.mockMvc.perform(post(endpoint)
+        MvcResult resultPost = this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
@@ -203,7 +212,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .andReturn();
         Assertions.assertEquals(scheduledTasksCache.size(), 1);
 
-        this.mockMvc.perform(post(endpoint)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservationTwo)))
                 .andExpect(status().isOk())
@@ -212,7 +222,8 @@ public class ReservationsControllerTests extends AbstractTest {
         Assertions.assertEquals(scheduledTasksCache.size(), 2);
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
-        this.mockMvc.perform(put(endpoint + "/" + id)
+        this.mockMvc.perform(put(reservationsEndpoint + "/" + id)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .param("endTime", String.valueOf(localDateTime.plusHours(3))))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
@@ -233,7 +244,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusSeconds(5))
                 .endTime(localDateTime.plusSeconds(10)).build();
 
-        MvcResult resultPost = this.mockMvc.perform(post(endpoint)
+        MvcResult resultPost = this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
@@ -242,7 +254,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .andReturn();
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
-        this.mockMvc.perform(get(endpoint + "/" + id))
+        this.mockMvc.perform(get(reservationsEndpoint + "/" + id)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()));
@@ -264,20 +277,23 @@ public class ReservationsControllerTests extends AbstractTest {
                 .endTime(localDateTime.plusSeconds(10)).build();
 
         UUID uuid = UUID.randomUUID();
-        this.mockMvc.perform(get(endpoint + "/" + uuid))
+        this.mockMvc.perform(get(reservationsEndpoint + "/" + uuid)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
                 .andExpect(status().isNotFound());
-        this.mockMvc.perform(put(endpoint + "/" + uuid)
+        this.mockMvc.perform(put(reservationsEndpoint + "/" + uuid)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .param("endTime", String.valueOf(localDateTime.plusHours(3)))
                         .content(jackson.writeValueAsString(reservation))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
-        this.mockMvc.perform(delete(endpoint + "/" + uuid))
+        this.mockMvc.perform(delete(reservationsEndpoint + "/" + uuid)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("DELETE - Reservation")
-    public void positive_getReservationNotExistingId() throws Exception {
+    public void positive_deleteReservation() throws Exception {
         adjustClockTo(DayOfWeek.MONDAY);
         dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
 
@@ -289,7 +305,8 @@ public class ReservationsControllerTests extends AbstractTest {
                 .startTime(localDateTime.plusSeconds(5))
                 .endTime(localDateTime.plusSeconds(10)).build();
 
-        MvcResult resultPost = this.mockMvc.perform(post(endpoint)
+        MvcResult resultPost = this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
@@ -298,9 +315,106 @@ public class ReservationsControllerTests extends AbstractTest {
                 .andReturn();
 
         String id = JsonPath.read(resultPost.getResponse().getContentAsString(), "$.id");
-        this.mockMvc.perform(delete(endpoint + "/" + id))
+        this.mockMvc.perform(delete(reservationsEndpoint + "/" + id)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
                 .andExpect(status().isOk())
                 .andReturn();
         Assertions.assertEquals(scheduledTasksCache.size(), 0);
+    }
+
+    @Test
+    @DisplayName("DELETE - All Reservations")
+    public void positive_deleteAllReservations() throws Exception {
+        adjustClockTo(DayOfWeek.MONDAY);
+        dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
+
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
+        Reservation reservation = Reservation.builder()
+                .carId(carSupraOfAlice.getId())
+                .employeeId(employeeAlice.getId())
+                .parkingSpotId(parkingSpotA.getId())
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
+
+        Reservation reservationTwo = Reservation.builder()
+                .carId(carTeslaOfBob.getId())
+                .employeeId(employeeBob.getId())
+                .parkingSpotId(parkingSpotB.getId())
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
+
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(reservation)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()));
+
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(reservationTwo)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.carId").value(reservationTwo.getCarId().toString()));
+
+        Assertions.assertEquals(scheduledTasksCache.size(), 2);
+
+        this.mockMvc.perform(delete(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
+                .andExpect(status().isOk());
+
+        Assertions.assertEquals(scheduledTasksCache.size(), 0);
+    }
+
+    @Test
+    @DisplayName("GET - All Reservations")
+    public void positive_getAllReservations() throws Exception {
+        adjustClockTo(DayOfWeek.MONDAY);
+        dateTimeProvider.offsetClock(Duration.ofHours(24 - dateTimeProvider.getZonedDateTime().getHour()));
+
+        LocalDateTime localDateTime = dateTimeProvider.getZonedDateTime().toLocalDateTime();
+        Reservation reservation = Reservation.builder()
+                .carId(carSupraOfAlice.getId())
+                .employeeId(employeeAlice.getId())
+                .parkingSpotId(parkingSpotA.getId())
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
+
+        Reservation reservationTwo = Reservation.builder()
+                .carId(carTeslaOfBob.getId())
+                .employeeId(employeeBob.getId())
+                .parkingSpotId(parkingSpotB.getId())
+                .startTime(localDateTime.plusSeconds(5))
+                .endTime(localDateTime.plusSeconds(10)).build();
+
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(reservation)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()));
+
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(reservationTwo)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.carId").value(reservationTwo.getCarId().toString()));
+
+        this.mockMvc.perform(get(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.[0].id").exists())
+                .andExpect(jsonPath("$.[0].carId").exists())
+                .andExpect(jsonPath("$.[0].employeeId").exists())
+                .andExpect(jsonPath("$.[0].parkingSpotId").exists())
+                .andExpect(jsonPath("$.[0].startTime").exists())
+                .andExpect(jsonPath("$.[0].endTime").exists());
     }
 }

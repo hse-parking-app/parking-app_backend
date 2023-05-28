@@ -1,15 +1,13 @@
 package org.hse.parkings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
-import org.hse.parkings.filter.JwtHeaderFilter;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.building.*;
 import org.hse.parkings.model.employee.Employee;
 import org.hse.parkings.model.employee.Role;
+import org.hse.parkings.model.jwt.JwtResponse;
 import org.hse.parkings.utils.DateTimeProvider;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -29,6 +26,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.util.Collections;
 
+import static org.hse.parkings.service.ReservationService.reservationsQueue;
 import static org.hse.parkings.utils.Cache.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,6 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles(profiles = "test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.Random.class)
 public class AbstractTest {
 
     protected final Employee employeeAlice = Employee.builder()
@@ -50,6 +50,11 @@ public class AbstractTest {
             .email("goodbob@123.wow")
             .password("123")
             .roles(Collections.singleton(Role.ADMIN)).build();
+    protected final Employee employeeDarlene = Employee.builder()
+            .name("Darlene")
+            .email("d@d.d")
+            .password("123")
+            .roles(Collections.singleton(Role.APP_USER)).build();
 
     protected final Car carSupraOfAlice = Car.builder()
             .ownerId(employeeAlice.getId())
@@ -74,6 +79,12 @@ public class AbstractTest {
             .model("Tesla Model X")
             .lengthMeters(1.5)
             .weightTons(1.1)
+            .registryNumber("ABC-125").build();
+    protected final Car carPorscheOfDarlene = Car.builder()
+            .ownerId(employeeDarlene.getId())
+            .model("Porsche 911")
+            .lengthMeters(1.2)
+            .weightTons(1.0)
             .registryNumber("ABC-125").build();
 
     protected final Building building = Building.builder()
@@ -109,6 +120,7 @@ public class AbstractTest {
             .isFree(true)
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
+
     protected final ParkingLevel parkingLevelTwo = ParkingLevel.builder()
             .buildingId(building.getId())
             .levelNumber(1)
@@ -131,7 +143,17 @@ public class AbstractTest {
             .canvas(new CanvasSize(1, 1))
             .onCanvasCoords(new OnCanvasCoords(1, 1)).build();
 
-    protected String adminToken = null;
+    protected String bearer = "Bearer ";
+    protected JwtResponse tokens = null;
+
+    protected String buildingEndpoint = "/building";
+    protected String parkingLevelsEndpoint = "/parkingLevels";
+    protected String parkingSpotsEndpoint = "/parkingSpots";
+    protected String authEndpoint = "/auth";
+    protected String carsEndpoint = "/cars";
+    protected String employeesEndpoint = "/employees";
+    protected String reservationsEndpoint = "/reservations";
+    protected String timeEndpoint = "/time";
 
     @Autowired
     protected DateTimeProvider dateTimeProvider;
@@ -159,7 +181,75 @@ public class AbstractTest {
         dateTimeProvider.offsetClock(Duration.ofDays(i));
     }
 
-    void insert(Car car) {
+    protected void loginAs(Employee employee) throws Exception {
+        MvcResult resultPost = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jackson.writeValueAsString(employee)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        tokens = jackson.readValue(resultPost.getResponse().getContentAsString(), JwtResponse.class);
+    }
+
+    @BeforeAll
+    void setUpEmployees() {
+        insert(employeeAlice);
+        insert(employeeBob);
+        insert(employeeDarlene);
+    }
+
+    @BeforeEach
+    void setUpEach(WebApplicationContext webApplicationContext) {
+        insert(carSupraOfAlice);
+        insert(carSkylineOfAlice);
+        insert(carAudiOfBob);
+        insert(carTeslaOfBob);
+        insert(carPorscheOfDarlene);
+
+        insert(building);
+        insert(parkingLevelOne);
+        insert(parkingLevelTwo);
+        insert(parkingSpotA);
+        insert(parkingSpotB);
+        insert(parkingSpotC);
+        insert(parkingSpotD);
+        insert(parkingSpotE);
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .alwaysDo(MockMvcResultHandlers.print())
+                .addFilter(new CharacterEncodingFilter("UTF-8", false))
+                .apply(springSecurity()).build();
+    }
+
+    @AfterAll
+    void tearDownEmployees() {
+        deleteEmployees();
+    }
+
+    @AfterEach
+    void tearDownEach() {
+        deleteCars();
+        deleteBuildings();
+        deleteParkingLevels();
+        deleteParkingSpots();
+        deleteReservations();
+        carCache.clear();
+        employeeCache.clear();
+        buildingCache.clear();
+        parkingLevelCache.clear();
+        parkingSpotCache.clear();
+        reservationCache.clear();
+
+        scheduledTasksCache.forEach((uuid, pair) -> {
+            pair.first().cancel(true);
+            pair.second().cancel(true);
+        });
+        scheduledTasksCache.clear();
+        reservationsQueue.clear();
+    }
+
+    protected void insert(Car car) {
         jdbcTemplate.update(
                 """
                         INSERT INTO cars (id, owner_id, model, length_meters, weight_tons, registry_number)
@@ -174,7 +264,7 @@ public class AbstractTest {
                 });
     }
 
-    void insert(Employee employee) {
+    protected void insert(Employee employee) {
         jdbcTemplate.update(
                 """
                         INSERT INTO employees (id, name, email, password)
@@ -197,7 +287,7 @@ public class AbstractTest {
         }
     }
 
-    void insert(Building building) {
+    protected void insert(Building building) {
         jdbcTemplate.update(
                 """
                         INSERT INTO buildings (id, name, address, number_of_levels)
@@ -210,7 +300,7 @@ public class AbstractTest {
                 });
     }
 
-    void insert(ParkingLevel parkingLevel) {
+    protected void insert(ParkingLevel parkingLevel) {
         jdbcTemplate.update(
                 """
                         INSERT INTO parking_levels (id, building_id, level_number, number_of_spots, canvas)
@@ -226,7 +316,7 @@ public class AbstractTest {
                 });
     }
 
-    void insert(ParkingSpot parkingSpot) {
+    protected void insert(ParkingSpot parkingSpot) {
         jdbcTemplate.update(
                 """
                         INSERT INTO parking_spots (id, level_id, building_id, parking_number, is_available, is_free, canvas, on_canvas_coords)
@@ -247,84 +337,27 @@ public class AbstractTest {
                 });
     }
 
-    void deleteCars() {
+    protected void deleteCars() {
         jdbcTemplate.update("DELETE FROM cars");
     }
 
-    void deleteEmployees() {
+    protected void deleteEmployees() {
         jdbcTemplate.update("DELETE FROM employees");
     }
 
-    void deleteBuildings() {
+    protected void deleteBuildings() {
         jdbcTemplate.update("DELETE FROM buildings");
     }
 
-    void deleteParkingLevels() {
+    protected void deleteParkingLevels() {
         jdbcTemplate.update("DELETE FROM parking_levels");
     }
 
-    void deleteParkingSpots() {
+    protected void deleteParkingSpots() {
         jdbcTemplate.update("DELETE FROM parking_spots");
     }
 
-    void deleteReservations() {
+    protected void deleteReservations() {
         jdbcTemplate.update("DELETE FROM reservations");
-    }
-
-    @BeforeEach
-    void setUpEach(WebApplicationContext webApplicationContext) throws Exception {
-        insert(employeeAlice);
-        insert(employeeBob);
-
-        MvcResult resultPost = mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jackson.writeValueAsString(employeeAlice)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-        adminToken = "Bearer " + JsonPath.read(resultPost.getResponse().getContentAsString(), "$.accessToken");
-
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .alwaysDo(MockMvcResultHandlers.print())
-                .addFilter(new CharacterEncodingFilter("UTF-8", false))
-                .addFilter(new JwtHeaderFilter(adminToken))
-                .apply(springSecurity()).build();
-
-        insert(carSupraOfAlice);
-        insert(carSkylineOfAlice);
-        insert(carAudiOfBob);
-        insert(carTeslaOfBob);
-
-        insert(building);
-        insert(parkingLevelOne);
-        insert(parkingLevelTwo);
-        insert(parkingSpotA);
-        insert(parkingSpotB);
-        insert(parkingSpotC);
-        insert(parkingSpotD);
-        insert(parkingSpotE);
-    }
-
-    @AfterEach
-    void tearDownEach() {
-        deleteEmployees();
-        deleteCars();
-        deleteBuildings();
-        deleteParkingLevels();
-        deleteParkingSpots();
-        deleteReservations();
-        carCache.clear();
-        employeeCache.clear();
-        buildingCache.clear();
-        parkingLevelCache.clear();
-        parkingSpotCache.clear();
-        reservationCache.clear();
-
-        scheduledTasksCache.forEach((uuid, pair) -> {
-            pair.first().cancel(true);
-            pair.second().cancel(true);
-        });
-        scheduledTasksCache.clear();
     }
 }

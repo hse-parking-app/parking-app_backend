@@ -3,11 +3,9 @@ package org.hse.parkings.logic;
 import com.jayway.jsonpath.JsonPath;
 import org.hse.parkings.AbstractTest;
 import org.hse.parkings.model.Reservation;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -24,9 +22,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("ParkingLevel spots map tests")
 public class ParkingLevelsLogicTests extends AbstractTest {
 
-    private final String endpointParkingLevels = "/parkingLevels";
-
-    private final String endpointReservations = "/reservations";
+    @BeforeAll
+    void userForTests() throws Exception {
+        loginAs(employeeAlice);
+    }
 
     @AfterEach
     void restoreTime() {
@@ -36,12 +35,14 @@ public class ParkingLevelsLogicTests extends AbstractTest {
     @Test
     @DisplayName("Get map of parking spots on level")
     public void positive_getMapOfParkingSpotsOnLevel() throws Exception {
-        this.mockMvc.perform(get(endpointParkingLevels + "/" + parkingLevelOne.getId() + "/spots"))
+        this.mockMvc.perform(get(parkingLevelsEndpoint + "/" + parkingLevelOne.getId() + "/spots")
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.length()").value(3));
 
-        this.mockMvc.perform(get(endpointParkingLevels + "/" + parkingLevelTwo.getId() + "/spots"))
+        this.mockMvc.perform(get(parkingLevelsEndpoint + "/" + parkingLevelTwo.getId() + "/spots")
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.length()").value(2));
@@ -56,7 +57,8 @@ public class ParkingLevelsLogicTests extends AbstractTest {
         LocalDateTime startTime = dateTimeProvider.getZonedDateTime().toLocalDateTime().plusHours(2);
         LocalDateTime endTime = dateTimeProvider.getZonedDateTime().toLocalDateTime().plusHours(3);
 
-        this.mockMvc.perform(get(endpointParkingLevels + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+        this.mockMvc.perform(get(parkingLevelsEndpoint + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .param("startTime", String.valueOf(startTime))
                         .param("endTime", String.valueOf(endTime)))
                 .andExpect(status().isOk())
@@ -77,21 +79,24 @@ public class ParkingLevelsLogicTests extends AbstractTest {
                 .startTime(startTime.plusMinutes(5))
                 .endTime(endTime.minusMinutes(5)).build();
 
-        this.mockMvc.perform(post(endpointReservations)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()));
 
-        this.mockMvc.perform(post(endpointReservations)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservationTwo)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservationTwo.getCarId().toString()));
 
-        MvcResult resultPost = this.mockMvc.perform(get(endpointParkingLevels + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+        MvcResult resultPost = this.mockMvc.perform(get(parkingLevelsEndpoint + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .param("startTime", String.valueOf(startTime))
                         .param("endTime", String.valueOf(endTime)))
                 .andExpect(status().isOk())
@@ -111,7 +116,8 @@ public class ParkingLevelsLogicTests extends AbstractTest {
         LocalDateTime startTime = dateTimeProvider.getZonedDateTime().toLocalDateTime().plusHours(2);
         LocalDateTime endTime = dateTimeProvider.getZonedDateTime().toLocalDateTime().plusHours(3);
 
-        this.mockMvc.perform(get(endpointParkingLevels + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+        this.mockMvc.perform(get(parkingLevelsEndpoint + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .param("startTime", String.valueOf(startTime))
                         .param("endTime", String.valueOf(endTime)))
                 .andExpect(status().isOk())
@@ -132,21 +138,24 @@ public class ParkingLevelsLogicTests extends AbstractTest {
                 .startTime(startTime.minusHours(1))
                 .endTime(startTime).build();
 
-        this.mockMvc.perform(post(endpointReservations)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservation.getCarId().toString()));
 
-        this.mockMvc.perform(post(endpointReservations)
+        this.mockMvc.perform(post(reservationsEndpoint)
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jackson.writeValueAsString(reservationTwo)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.carId").value(reservationTwo.getCarId().toString()));
 
-        MvcResult resultPost = this.mockMvc.perform(get(endpointParkingLevels + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+        MvcResult resultPost = this.mockMvc.perform(get(parkingLevelsEndpoint + "/" + parkingLevelOne.getId() + "/freeSpotsInInterval")
+                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken())
                         .param("startTime", String.valueOf(startTime))
                         .param("endTime", String.valueOf(endTime)))
                 .andExpect(status().isOk())
