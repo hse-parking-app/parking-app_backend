@@ -53,7 +53,7 @@ public class ReservationService {
 
     private final DateTimeProvider dateTimeProvider;
 
-    private final PriorityBlockingQueue<PBQElement> reservationsQueue = new PriorityBlockingQueue<>(100,
+    public static final PriorityBlockingQueue<PBQElement> reservationsQueue = new PriorityBlockingQueue<>(100,
             (one, two) -> {
                 int isEndTimeComp = one.getIsEndTime().compareTo(two.getIsEndTime());
                 int timeComp = one.getExecutionTime().compareTo(two.getExecutionTime());
@@ -150,16 +150,8 @@ public class ReservationService {
         }
 
         boolean parkingSpotEngaged = !reservationRepository.getParkingSpotTimeCollisions(reservation).isEmpty();
-        boolean carAlreadyHasParkingSpaceAtThisTime = !reservationRepository.getCarTimeCollisions(reservation).isEmpty();
         if (parkingSpotEngaged) {
             throw new EngagedException("Can't extend. The parking space is occupied. Try another parking spot or reservation time");
-        }
-        if (carAlreadyHasParkingSpaceAtThisTime) {
-            throw new EngagedException("One car can occupy only one parking space at a time. Try another time or car");
-        }
-
-        if (scheduledTasksCache.get(reservation.getId()).second().isDone()) {
-            return find(reservation.getId());
         }
 
         scheduledTasksCache.get(reservation.getId()).second().cancel(true);
@@ -185,7 +177,7 @@ public class ReservationService {
         Reservation reservation = find(id);
         JwtAuthentication authInfo = authService.getAuthInfo();
 
-        if (authInfo.getId() != reservation.getEmployeeId()) {
+        if (!authInfo.getId().equals(reservation.getEmployeeId())) {
             throw new NotFoundException("Reservation with id = " + id + " not found");
         }
 
@@ -196,7 +188,7 @@ public class ReservationService {
         Reservation reservation = find(id);
         Pair<ScheduledFuture<?>, ScheduledFuture<?>> scheduled
                 = scheduledTasksCache.get(id);
-        if (scheduled.first().isDone()) {
+        if (scheduled.first().isDone() && !scheduled.second().isDone()) {
             scheduled.second().cancel(true);
             parkingSpotService.freeSpot(reservation.getParkingSpotId());
         } else {
@@ -254,9 +246,5 @@ public class ReservationService {
 
     public Set<Reservation> findAll() {
         return reservationRepository.findAll();
-    }
-
-    public Set<Reservation> findReservationsOnParkingLevelInInterval(UUID levelId, LocalDateTime startTime, LocalDateTime endTime) {
-        return reservationRepository.getReservationsOnParkingLevelInInterval(levelId, startTime, endTime);
     }
 }
