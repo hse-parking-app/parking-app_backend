@@ -26,7 +26,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     public static final String[] endpointsExcludedFromJwt = new String[]{"/auth/signUp", "/auth/login",
-            "/auth/update/access", "/auth/update/refresh", "/time/current"};
+            "/auth/update/access", "/time/current"};
 
     private final JwtFilter jwtFilter;
 
@@ -47,14 +47,14 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .exceptionHandling().authenticationEntryPoint(((request, response, ex) -> {
-                    response.setContentType("application/json;charset=UTF-8");
+                    response.setContentType("application/json");
                     response.setStatus(HttpStatus.FORBIDDEN.value());
                     response.getWriter().write(jackson.writeValueAsString(new Error(
                             HttpStatus.FORBIDDEN,
                             HttpStatus.FORBIDDEN.value(),
                             dateTimeProvider.getZonedDateTime(),
                             Collections.singletonList(new CauseMessage("error", ex.getMessage())),
-                            "uri=" + request.getServletPath()
+                            "uri=" + request.getPathInfo()
                     )));
                 }))
                 .and()
