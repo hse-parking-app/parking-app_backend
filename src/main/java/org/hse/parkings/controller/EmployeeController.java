@@ -2,6 +2,7 @@ package org.hse.parkings.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.hse.parkings.model.employee.Employee;
+import org.hse.parkings.model.jwt.JwtResponse;
 import org.hse.parkings.service.EmployeeService;
 import org.hse.parkings.validate.groups.employee.AppUserEmployee;
 import org.hse.parkings.validate.groups.employee.DefaultEmployee;
@@ -33,12 +34,6 @@ public class EmployeeController {
         return service.save(employee);
     }
 
-    @DeleteMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    void deleteAll() {
-        service.deleteAll();
-    }
-
     @GetMapping("/{employeeId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     Employee get(@PathVariable UUID employeeId) {
@@ -60,7 +55,7 @@ public class EmployeeController {
 
     @PutMapping("/employee")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'APP_USER')")
-    Employee editEmployee(@Validated(AppUserEmployee.class) @RequestBody Employee employee) {
+    JwtResponse editEmployee(@Validated(AppUserEmployee.class) @RequestBody Employee employee) {
         return service.updateEmployee(employee);
     }
 

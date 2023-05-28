@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.EmployeeRepository;
 import org.hse.parkings.exception.AlreadyExistsException;
 import org.hse.parkings.exception.NotFoundException;
+import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.employee.Employee;
 import org.hse.parkings.model.employee.Role;
 import org.hse.parkings.model.jwt.JwtAuthentication;
+import org.hse.parkings.model.jwt.JwtRequest;
+import org.hse.parkings.model.jwt.JwtResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +21,7 @@ import java.util.UUID;
 import static org.hse.parkings.utils.Cache.employeeCache;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class EmployeeService {
 
     private final EmployeeRepository repository;
@@ -25,6 +29,9 @@ public class EmployeeService {
     private final PasswordEncoder encoder;
 
     private final AuthService authService;
+
+    @Lazy
+    private final ReservationService reservationService;
 
     public Employee save(Employee employee) throws AlreadyExistsException {
         Employee toSave = Employee.builder()
@@ -41,36 +48,34 @@ public class EmployeeService {
     }
 
     public Employee update(Employee employee) {
-        employee.setPassword(encoder.encode(employee.getPassword()));
-        repository.update(employee);
-        employeeCache.remove(employee.getId());
-        return find(employee.getId());
+        Employee toUpdate = employee.toBuilder().password(encoder.encode(employee.getPassword())).build();
+        repository.update(toUpdate);
+        employeeCache.remove(toUpdate.getId());
+        return find(toUpdate.getId());
     }
 
-    public Employee updateEmployee(Employee employee) throws NotFoundException {
+    public JwtResponse updateEmployee(Employee employee) throws NotFoundException {
         JwtAuthentication authInfo = authService.getAuthInfo();
 
-        if (!employee.getId().equals(authInfo.getId())) {
-            throw new NotFoundException("Employee with id = " + employee.getId() + " not found");
-        }
+        employee.setId(authInfo.getId());
         employee.setRoles(Collections.singleton(Role.APP_USER));
 
-        return update(employee);
+        update(employee);
+
+        return authService.login(new JwtRequest(employee.getEmail(), employee.getPassword()));
     }
 
     public void delete(UUID id) {
         repository.delete(id);
-        employeeCache.remove(id);
-    }
 
-    public void deleteAll() {
-        repository.deleteAll();
-        employeeCache.clear();
+        Set<Reservation> reservations = reservationService.findEmployeeReservations(id);
+        reservations.forEach(reservation -> reservationService.deleteEmployeeReservation(reservation.getId()));
+
+        employeeCache.remove(id);
     }
 
     public void deleteEmployee() {
         JwtAuthentication authInfo = authService.getAuthInfo();
-
         delete(authInfo.getId());
     }
 
