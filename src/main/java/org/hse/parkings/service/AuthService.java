@@ -3,6 +3,7 @@ package org.hse.parkings.service;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.hse.parkings.exception.AuthException;
+import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.employee.Employee;
 import org.hse.parkings.model.employee.Role;
 import org.hse.parkings.model.jwt.JwtAuthentication;
@@ -31,7 +32,12 @@ public class AuthService {
     private final JwtProvider jwtProvider;
 
     public JwtResponse login(JwtRequest authRequest) throws AuthException {
-        Employee employee = employeeService.findByEmail(authRequest.getEmail());
+        Employee employee;
+        try {
+            employee = employeeService.findByEmail(authRequest.getEmail());
+        } catch (NotFoundException e) {
+            throw new AuthException("Wrong email or password");
+        }
         if (encoder.matches(authRequest.getPassword(), employee.getPassword())) {
             String accessToken = jwtProvider.generateAccessToken(employee);
             String refreshToken = jwtProvider.generateRefreshToken(employee);
@@ -84,6 +90,8 @@ public class AuthService {
                 employeeService.saveRefreshToken(employee.getEmail(), newRefreshToken);
 
                 return new JwtResponse(accessToken, newRefreshToken);
+            } else {
+                throw new AuthException("Refresh token is valid but is unknown");
             }
         }
 
