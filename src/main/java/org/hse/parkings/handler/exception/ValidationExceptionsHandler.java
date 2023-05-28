@@ -74,7 +74,7 @@ public class ValidationExceptionsHandler {
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.value(),
                 dateTimeProvider.getZonedDateTime(),
-                Collections.singletonList(new CauseMessage("error", ex.getMessage())),
+                Collections.singletonList(new CauseMessage("error", "Message not readable or required request body is missing")),
                 request.getDescription(false)
         );
     }
