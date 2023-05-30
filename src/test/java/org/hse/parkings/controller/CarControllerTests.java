@@ -133,7 +133,7 @@ public class CarControllerTests extends AbstractTest {
                 .andExpect(status().isNotFound());
         this.mockMvc.perform(delete(carsEndpoint + "/" + uuid)
                         .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -158,18 +158,6 @@ public class CarControllerTests extends AbstractTest {
         this.mockMvc.perform(get(carsEndpoint + "/" + carSupraOfAlice.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("DELETE - All cars")
-    public void positive_deleteAllCars() throws Exception {
-        this.mockMvc.perform(delete(carsEndpoint)
-                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
-                .andExpect(status().isOk());
-        this.mockMvc.perform(get(carsEndpoint)
-                        .header(HttpHeaders.AUTHORIZATION, bearer + tokens.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test

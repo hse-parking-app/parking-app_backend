@@ -37,12 +37,6 @@ public class CarController {
         return carService.save(car);
     }
 
-    @DeleteMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    void deleteAll() {
-        carService.deleteAll();
-    }
-
     @GetMapping("/{carId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     Car get(@PathVariable UUID carId) {

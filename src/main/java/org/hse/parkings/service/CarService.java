@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.hse.parkings.dao.CarRepository;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.Car;
+import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.jwt.JwtAuthentication;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -13,7 +15,7 @@ import java.util.UUID;
 import static org.hse.parkings.utils.Cache.carCache;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class CarService {
 
     private final CarRepository carRepository;
@@ -21,6 +23,9 @@ public class CarService {
     private final EmployeeService employeeService;
 
     private final AuthService authService;
+
+    @Lazy
+    private final ReservationService reservationService;
 
     public Car save(Car car) throws NotFoundException {
         Car toSave = Car.builder()
@@ -60,13 +65,14 @@ public class CarService {
     }
 
     public void delete(UUID id) {
-        carRepository.delete(id);
-        carCache.remove(id);
-    }
+        Car car = findCar(id);
 
-    public void deleteAll() {
-        carRepository.deleteAll();
-        carCache.clear();
+        carRepository.delete(id);
+
+        Set<Reservation> reservations = reservationService.findEmployeeReservations(car.getOwnerId());
+        reservations.forEach(reservation -> reservationService.deleteEmployeeReservation(reservation.getId()));
+
+        carCache.remove(id);
     }
 
     public void deleteEmployeeCar(UUID id) throws NotFoundException {
