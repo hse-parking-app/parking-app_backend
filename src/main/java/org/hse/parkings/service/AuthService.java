@@ -2,6 +2,7 @@ package org.hse.parkings.service;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hse.parkings.exception.AuthException;
 import org.hse.parkings.exception.NotFoundException;
 import org.hse.parkings.model.employee.Employee;
@@ -10,7 +11,6 @@ import org.hse.parkings.model.jwt.JwtAuthentication;
 import org.hse.parkings.model.jwt.JwtRequest;
 import org.hse.parkings.model.jwt.JwtResponse;
 import org.hse.parkings.security.JwtProvider;
-import org.hse.parkings.utils.Log;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
@@ -22,6 +22,7 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Lazy})
+@Slf4j
 public class AuthService {
 
     private final PasswordEncoder encoder;
@@ -106,6 +107,6 @@ public class AuthService {
     public void logoutAll() {
         employeeService.deleteAllRefreshTokens();
 
-        Log.logger.info("Refresh tokens cleared");
+        log.info("Refresh tokens cleared");
     }
 }

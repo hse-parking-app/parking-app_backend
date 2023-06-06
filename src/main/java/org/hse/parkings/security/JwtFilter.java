@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.hse.parkings.model.jwt.JwtAuthentication;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -25,8 +26,6 @@ import static org.hse.parkings.security.SecurityConfig.endpointsExcludedFromJwt;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends GenericFilterBean {
-
-    private static final String AUTHORIZATION = "Authorization";
 
     private final JwtProvider jwtProvider;
 
@@ -57,7 +56,7 @@ public class JwtFilter extends GenericFilterBean {
     }
 
     private String getTokenFromRequest(HttpServletRequest request) {
-        String bearer = request.getHeader(AUTHORIZATION);
+        String bearer = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
             return bearer.substring(7);
         }

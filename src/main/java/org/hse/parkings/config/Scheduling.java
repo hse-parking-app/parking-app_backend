@@ -12,8 +12,8 @@ public class Scheduling {
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(10);
-        threadPoolTaskScheduler.setThreadNamePrefix("parkings-scheduler-");
+        threadPoolTaskScheduler.setPoolSize(100);
+        threadPoolTaskScheduler.setThreadNamePrefix("scheduled-");
         threadPoolTaskScheduler.initialize();
         return threadPoolTaskScheduler;
     }

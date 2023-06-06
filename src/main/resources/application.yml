@@ -22,6 +22,27 @@ spring:
 
 ---
 
+auth:
+  inspector:
+    login: ins
+    password: ins
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-components: always
+      show-details: always
+      probes:
+        enabled: true
+
+logging:
+  file:
+    name: ./logs/parkings.log
+
 jwt:
   secret:
     access: CfDFNdA+QnpPRc+PQ0zadpyKfdHVzbbnLTtTblvR2Zn8avMFTrSgCSnrF5/T16jI4FsUsTkvMrB31Lj0ol0I+w==

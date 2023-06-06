@@ -1,6 +1,7 @@
 package org.hse.parkings.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hse.parkings.dao.ReservationRepository;
 import org.hse.parkings.exception.EngagedException;
 import org.hse.parkings.exception.NotFoundException;
@@ -11,7 +12,6 @@ import org.hse.parkings.model.employee.Employee;
 import org.hse.parkings.model.jwt.JwtAuthentication;
 import org.hse.parkings.service.building.ParkingSpotService;
 import org.hse.parkings.utils.DateTimeProvider;
-import org.hse.parkings.utils.Log;
 import org.hse.parkings.utils.PBQElement;
 import org.hse.parkings.utils.Pair;
 import org.hse.parkings.validate.groups.reservation.DefaultReservation;
@@ -35,6 +35,7 @@ import static org.hse.parkings.utils.Cache.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -227,7 +228,7 @@ public class ReservationService {
         reservationCache.clear();
         parkingSpotCache.clear();
 
-        Log.logger.info("Reservations cleared, spots freed");
+        log.info("Reservations cleared, spots freed");
     }
 
     public Reservation find(UUID id) throws NotFoundException {

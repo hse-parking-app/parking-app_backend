@@ -1,5 +1,6 @@
 package org.hse.parkings.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.hse.parkings.model.Car;
 import org.hse.parkings.model.Reservation;
 import org.hse.parkings.model.building.Building;
@@ -7,11 +8,14 @@ import org.hse.parkings.model.building.ParkingLevel;
 import org.hse.parkings.model.building.ParkingSpot;
 import org.hse.parkings.model.employee.Employee;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
+@Component
+@Slf4j
 public class Cache {
 
     public static ConcurrentHashMap<UUID, Car> carCache = new ConcurrentHashMap<>();
@@ -27,7 +31,7 @@ public class Cache {
     public static ConcurrentHashMap<UUID, Pair<ScheduledFuture<?>, ScheduledFuture<?>>> scheduledTasksCache
             = new ConcurrentHashMap<>();
 
-    @Scheduled(cron = "@daily")
+    @Scheduled(cron = "@daily", zone = "UTC")
     public static void freeCache() {
         carCache.clear();
 
@@ -39,6 +43,6 @@ public class Cache {
         parkingLevelCache.clear();
         parkingSpotCache.clear();
 
-        Log.logger.info("Cache cleared");
+        log.info("Cache cleared");
     }
 }
