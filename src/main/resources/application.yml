@@ -8,6 +8,10 @@ spring:
     activate:
       on-profile: default
 
+logging:
+  file:
+    name: ./container/logs/parkings.log
+
 ---
 
 spring:
@@ -19,6 +23,10 @@ spring:
   config:
     activate:
       on-profile: dev
+
+logging:
+  file:
+    name: ./logs/parkings.log
 
 ---
 
@@ -38,10 +46,6 @@ management:
       show-details: always
       probes:
         enabled: true
-
-logging:
-  file:
-    name: ./logs/parkings.log
 
 jwt:
   secret:
