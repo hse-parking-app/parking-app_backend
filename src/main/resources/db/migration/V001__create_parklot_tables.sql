@@ -15,9 +15,8 @@ CREATE TABLE employee_roles
 
 CREATE TABLE employee_tokens
 (
-    email         VARCHAR UNIQUE NOT NULL,
-    FOREIGN KEY (email) REFERENCES employees (email) ON DELETE CASCADE,
-    refresh_token VARCHAR        NOT NULL
+    email         VARCHAR PRIMARY KEY,
+    refresh_token VARCHAR NOT NULL
 );
 
 CREATE TABLE cars
