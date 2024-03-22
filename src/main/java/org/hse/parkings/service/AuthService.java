@@ -51,7 +51,6 @@ public class AuthService {
     }
 
     public JwtResponse signUp(Employee employee) throws AuthException {
-        employee.setPassword(encoder.encode(employee.getPassword()));
         employee.setRoles(Collections.singleton(Role.APP_USER));
         employeeService.save(employee);
         String accessToken = jwtProvider.generateAccessToken(employee);
